@@ -2439,21 +2439,21 @@ inline double Improvement(int B, int N, int M, int S, int OG_R, int OG_R1, int O
 	}
 	
 	//remove memory 
-	delete indexpt;
-	delete temparrivals;
-	delete tpickup;
-	delete tpickupstops;
-	delete pm_tt;
-	delete pm_acc;
+	delete []indexpt;
+	delete []temparrivals;
+	delete []tpickup;
+	delete []tpickupstops;
+	delete []pm_tt;
+	delete []pm_acc;
 	for (i = 0; i < OG_R; i++) {
-		delete ysol[i];
-		delete OGysol[i];
+		delete []ysol[i];
+		delete []OGysol[i];
 	}
-	delete ysol;
-	delete OGysol;
-	delete freqN;
-	delete bd;
-	delete trips;
+	delete []ysol;
+	delete []OGysol;
+	delete []freqN;
+	delete []bd;
+	delete []trips;
 	cout << "  ----------------------------  END IMPROVEMNT ----------------------------- with end_cost= " << end_cost << endl;
 	return end_cost;
 }
@@ -2790,23 +2790,23 @@ inline double StaticOpt(int B, int N, int M, int S, int OG_R, int OG_R1, int OG_
 	}
 
 	//remove memory 
-	delete indexpt;
-	delete temparrivals;
-	delete tpickup;
-	delete tpickupstops;
-	delete pm_tt;
-	delete pm_acc;
-	delete b_pm_tt;
-	delete b_pm_acc;
+	delete []indexpt;
+	delete []temparrivals;
+	delete []tpickup;
+	delete []tpickupstops;
+	delete []pm_tt;
+	delete []pm_acc;
+	delete []b_pm_tt;
+	delete []b_pm_acc;
 	for (i = 0; i < OG_R; i++) {
-		delete ysol[i];
-		delete OGysol[i];
+		delete []ysol[i];
+		delete []OGysol[i];
 	}
-	delete ysol;
-	delete OGysol;
-	delete freqN;
-	delete bd;
-	delete trips;
+	delete []ysol;
+	delete []OGysol;
+	delete []freqN;
+	delete []bd;
+	delete []trips;
 	cout << "  ----------------------------  END IMPROVEMNT ----------------------------- with end_cost= " << bb_cost << endl;
 	return bb_cost;
 }
@@ -5522,15 +5522,15 @@ int main() {
 					INFEASS = true;
 				}
 				delete[] change1;
-				//delete endC1;
+				//delete []endC1;
 				delete[] change2;
-				//delete endC2;
+				//delete []endC2;
 				delete[] change3;
-				//delete endC3;
+				//delete []endC3;
 				delete[] change4;
-				//delete endC4;
+				//delete []endC4;
 				delete[] change5;
-				//delete endC5;
+				//delete []endC5;
 				delete[] change6;
 			}
 			cost_c = INT32_MAX;
@@ -6424,11 +6424,11 @@ int main() {
 		dsol_p.close();
 
 		for (i = 0; i < R; i++) {
-			delete ttraveltimep[i];
-			delete tclosestPS[i];
+			delete []ttraveltimep[i];
+			delete []tclosestPS[i];
 		}
-		delete ttraveltimep;
-		delete tclosestPS;
+		delete []ttraveltimep;
+		delete []tclosestPS;
 	}
 		else {
 			cout << "READ SO\n";
@@ -6535,7 +6535,7 @@ int main() {
 	delete[] mandatory;
 
 	for (i = 0; i < (N - 1) * M; i++) {
-		delete optional[i];
+		delete []optional[i];
 	}
 	delete[] optional;
 
@@ -7009,30 +7009,22 @@ int main() {
 
 	////////////////////////////////////////////////////// remove memory
 	for (i = 0; i < S; i++) {
-		delete closestS[i];
-		delete traveltimes[i];
+		delete []closestS[i];
+		delete []traveltimes[i];
 	}
 
 	for (i = 0; i < OG_R; i++) {
-		delete b_ysol[i];
-		delete ysol[i];
-		delete closestPS[i];
-		delete traveltimep[i];
+		delete []b_ysol[i];
+		delete []ysol[i];
+		delete []closestPS[i];
+		delete []traveltimep[i];
 	}
-	delete ysol;
-	delete b_ysol;
-	delete closestPS;
-	delete closestS;
-	delete traveltimes;
-	delete traveltimep;
-
-	//_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-	//_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
-	//_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-	//_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDOUT);
-	//_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-	//_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDOUT);
-	_CrtDumpMemoryLeaks();
+	delete []ysol;
+	delete []b_ysol;
+	delete []closestPS;
+	delete []closestS;
+	delete []traveltimes;
+	delete []traveltimep;
 	}
 
 }
