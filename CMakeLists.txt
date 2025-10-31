@@ -21,15 +21,16 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 endif()
 
-# Find OpenMP
-find_package(OpenMP)
-if(OpenMP_CXX_FOUND)
-    include_directories(${OpenMP_CXX_INCLUDE_DIRS})
-    link_libraries(${OpenMP_CXX_LIBRARIES})
-endif()
 
-# Threads 
-find_package(Threads REQUIRED)
+# Find OpenMP for Clang
+set(OpenMP_CXX_LIBRARIES "/opt/homebrew/Cellar/libomp/21.1.1/lib/libomp.dylib")
+set(OpenMP_CXX_LIB_NAMES "omp")
+set(OpenMP_CXX_INCLUDE_DIRS "/opt/homebrew/Cellar/libomp/21.1.1/include")
+set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
+set(OpenMP_CXX_FLAGS "${OpenMP_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+
+include_directories(${OpenMP_CXX_INCLUDE_DIRS})
+link_libraries(${OpenMP_CXX_LIBRARIES})
 
 # Add any include file (only if directory exists)
 if(EXISTS ${PROJECT_SOURCE_DIR}/include)
@@ -43,13 +44,10 @@ file(GLOB_RECURSE SRC_FILES "src/*.cpp")
 add_executable(DFSMS ${SRC_FILES})
 
 # Link libraries to executable 
-target_link_libraries(DFSMS Threads::Threads)
+target_link_libraries(DFSMS ${OpenMP_CXX_LIBRARIES})
 
-# Link OpenMP if found
-if(OpenMP_CXX_FOUND)
-    target_link_libraries(DFSMS OpenMP::OpenMP_CXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
+# Set compiler flags 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 
 # For inellisense config 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
