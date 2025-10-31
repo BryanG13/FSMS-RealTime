@@ -2820,7 +2820,7 @@ int main() {
 	string igen = "";
 	if (inst_gen) igen = "Antwerp/";
 	int N_it = 30000;
-	ofstream inst("C:/Users/bgalarza/Desktop/BG/Model 4/Formal data/Instance_ANT_" + to_string(instance) + ".txt");
+	ofstream inst("data/input/Instance_ANT_" + to_string(instance) + ".txt");
 	inst << "---------- Weight factors of the objective function -------- " << endl << endl;
 	//WEIGHT FACTORS--------------------------------------------------------------------------
 	float c1 = 0.33f;
@@ -2884,7 +2884,7 @@ int main() {
 	for (i = 0; i < OG_R; i++) {
 		passengers[i] = new double[2];
 	}
-	ifstream filep("C:/Users/bgalarza/Desktop/BG/Model 4/Data/" + igen + "passengers" + to_string(OG_R) + ".txt");
+	ifstream filep("data/input/" + igen + "passengers" + to_string(OG_R) + ".txt");
 	int i0 = 0;
 	while (i0 < OG_R) {
 		filep >> passengers[i0][0] >> passengers[i0][1]; // extracts 2 floating point values seperated by whitespace
@@ -2895,7 +2895,7 @@ int main() {
 	for (i = 0; i < N; i++) {
 		mandatory[i] = new double[2];
 	}
-	ifstream filem("C:/Users/bgalarza/Desktop/BG/Model 4/Data/" + igen + "mandatory.txt");
+	ifstream filem("data/input/" + igen + "mandatory.txt");
 	i0 = 0;
 	while (i0 < N) {
 		filem >> mandatory[i0][0] >> mandatory[i0][1]; // extracts 2 floating point values seperated by whitespace
@@ -2906,7 +2906,7 @@ int main() {
 	for (i = 0; i < (N - 1) * M; i++) {
 		optional[i] = new double[2];
 	}
-	ifstream fileo("C:/Users/bgalarza/Desktop/BG/Model 4/Data/" + igen + "optional" + to_string(M) + ".txt");
+	ifstream fileo("data/input/" + igen + "optional" + to_string(M) + ".txt");
 	i0 = 0;
 	while (i0 < (N - 1) * M) {
 		fileo >> optional[i0][0] >> optional[i0][1]; // extracts 2 floating point values seperated by whitespace
@@ -2914,12 +2914,12 @@ int main() {
 	}
 	default_random_engine generator0;
 	double timestamps[OG_R];
-	ifstream filetp("C:/Users/bgalarza/Desktop/BG/Model 4/Data/" + igen + "timestamps" + to_string(OG_R) + ".txt");
+	ifstream filetp("data/input/" + igen + "timestamps" + to_string(OG_R) + ".txt");
 
 	// Arrival times of the passengers 
 	double OG_arrivals[OG_R1];
 	double arrivals[R1];
-	ifstream filea("C:/Users/bgalarza/Desktop/BG/Model 4/Data/" + igen + "arrivals" + to_string(OG_R) + ".txt");
+	ifstream filea("data/input/" + igen + "arrivals" + to_string(OG_R) + ".txt");
 	inst << endl << "Desired arrival times (DAT) of the passengers and time-stamp of request (TSR) in seconds: " << endl;
 	i0 = 0;
 	//cout << "SO2: " << SO2 << endl;
@@ -2945,7 +2945,7 @@ int main() {
 	// Departure times of the passengers 
 	double departures[R2];
 	double OG_departures[OG_R2];
-	ifstream filed("C:/Users/bgalarza/Desktop/BG/Model 4/Data/" + igen + "departures" + to_string(OG_R) + ".txt");
+	ifstream filed("data/input/" + igen + "departures" + to_string(OG_R) + ".txt");
 	inst << endl << "Desired departure times (DDT) of the passengers and time-stamp of request (TSR) in seconds: " << endl;
 	i0 = 0;
 	while (i0 < R2) {
@@ -2992,12 +2992,11 @@ int main() {
 		}
 	}
 	else {
-		read_walking_matrix("C:/Users/bgalarza/Desktop/BG/Model 4/Data/Antwerp/walking_data.csv", traveltimep, OG_R, S);
+		read_walking_matrix("data/input//walking_data.csv", traveltimep, OG_R, S);
 	}
 
 
 	inst << endl << "Walking time between passengers and bus stops in seconds: " << "\npassengers correspond with the rows, bus stops correspond with the columns \nthe mandatory stops are listed first, then the optional stops are listed" << endl;
-	//ofstream walk_p("C:/Users/bgalarza/Desktop/BG/Model 4/Data/Antwerp/walking.txt");
 	for (i = 0; i < OG_R; i++) {
 		for (j = 0; j < S; j++) {
 			if (!inst_gen) inst << int(traveltimep[i][j]) << "\t";
@@ -3031,7 +3030,7 @@ int main() {
 	}
 	else {
 		cout << "check\n";
-		read_travel_matrix("C:/Users/bgalarza/Desktop/BG/Model 4/Data/Antwerp/travel_time.csv", traveltimes, S);
+		read_travel_matrix("data/input/travel_time.csv", traveltimes, S);
 		cout << "check\n";
 	}
 
@@ -6393,9 +6392,9 @@ int main() {
 		cout << " Number of good feasible attempts: " << run << endl;
 		cout << "\tcost: " << best_cost << "\truntime: " << telapsed_time << endl;
 
-		ofstream xsol_p("C:/Users/bgalarza/Desktop/BG/Model 4/Data/StartSolutions/xsol_" + to_string(instance) + ".txt");
-		ofstream ysol_p("C:/Users/bgalarza/Desktop/BG/Model 4/Data/StartSolutions/ysol_" + to_string(instance) + ".txt");
-		ofstream dsol_p("C:/Users/bgalarza/Desktop/BG/Model 4/Data/StartSolutions/dsol_" + to_string(instance) + ".txt");
+		ofstream xsol_p("data/output/xsol_" + to_string(instance) + ".txt");
+		ofstream ysol_p("data/output/ysol_" + to_string(instance) + ".txt");
+		ofstream dsol_p("data/output/dsol_" + to_string(instance) + ".txt");
 		for (int i = 0; i < b_xsol.size(); i++) {
 			xsol_p << "BUS " << i << endl;
 			dsol_p << "BUS " << i << endl;
@@ -6432,9 +6431,9 @@ int main() {
 	}
 		else {
 			cout << "READ SO\n";
-			ifstream xsol_p("C:/Users/bgalarza/Desktop/BG/Model 4/Data/StartSolutions/xsol_" + to_string(instance) + ".txt");
-			ifstream ysol_p("C:/Users/bgalarza/Desktop/BG/Model 4/Data/StartSolutions/ysol_" + to_string(instance) + ".txt");
-			ifstream dsol_p("C:/Users/bgalarza/Desktop/BG/Model 4/Data/StartSolutions/dsol_" + to_string(instance) + ".txt");
+			ifstream xsol_p("data/output/xsol_" + to_string(instance) + ".txt");
+			ifstream ysol_p("data/output/sol_" + to_string(instance) + ".txt");
+			ifstream dsol_p("data/output/dsol_" + to_string(instance) + ".txt");
 
 			string line;
 			if (dsol_p.is_open()) { // make sure the file opening was successful
@@ -6584,8 +6583,8 @@ int main() {
 	//double freqN[N];
 	endtime = minTS + TS;
 	double start_time = 0, elapsed_time = 0;
-	ofstream rt_p("C:/Users/bgalarza/Desktop/BG/Model 4/Solution/Antwerp/runtimes_" + to_string(instance) + ".txt");
-	ofstream obj_p("C:/Users/bgalarza/Desktop/BG/Model 4/Solution/Antwerp/obj_" + to_string(instance) + ".txt");
+	ofstream rt_p("data/output/runtimes_" + to_string(instance) + ".txt");
+	ofstream obj_p("data/output/obj_" + to_string(instance) + ".txt");
 	double max_runtime = 0, current_time = 0, midpoint = 0;
 
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ BEGIN INSERTION ALGORITHM ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -6935,9 +6934,9 @@ int main() {
 		d_dl, d_de, dw, penalty, short_route, closestPS, d_t, true,isFEAS);
 	if (isFEAS) {
 		cout << "\t\t+++++++++++++ IS FEASIBLE +++++++++++++++++++\n";
-		ofstream xsol_p("C:/Users/bgalarza/Desktop/BG/Model 4/Solution/Antwerp/xsol_" + to_string(instance) + ".txt");
-		ofstream ysol_p("C:/Users/bgalarza/Desktop/BG/Model 4/Solution/Antwerp/ysol_" + to_string(instance) + ".txt");
-		ofstream dsol_p("C:/Users/bgalarza/Desktop/BG/Model 4/Solution/Antwerp/dsol_" + to_string(instance) + ".txt");
+		ofstream xsol_p("data/output/xsol_" + to_string(instance) + ".txt");
+		ofstream ysol_p("data/output/ysol_" + to_string(instance) + ".txt");
+		ofstream dsol_p("Cdata/output/dsol_" + to_string(instance) + ".txt");
 		int onb = 0;
 		for (i = 0; i < b_xsol.size(); i++) {
 			xsol_p << "BUS " << i << endl;
