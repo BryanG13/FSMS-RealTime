@@ -1,0 +1,299 @@
+---------- Weight factors of the objective function -------- 
+
+c1: 0.33 	 (For travel-time of the buses)
+c2: 0.33 	 (For walking time of the passengers)
+c3: 0.34 	 (For the absolute difference in desired arrival time and actual arrival time of the passengers)
+
+---------------------- Parameters -------------------------- 
+
+Number of buses: 18
+Number of mandatory bus stops: 8
+Number optional bus stops per cluster: 8 
+ --> One cluster between each mandatory stop: 56 optional stops in total
+Total number of bus stops: 64
+Number of passenger requests: 100
+Bus capacity: 20 passengers
+Planning horizon: 15120s
+Minimum time between two buses departing from a mandatory stop: 1200s
+Maximum walking time for any passenger: 1200 seconds
+Maximum amount of time a passenger can arrive too early w.r.t. their desired arrival time: 900 seconds
+Maximum amount of time a passenger can arrive too late w.r.t. their desired arrival time: 600 seconds
+Maximum amount of time a passenger can depart too early w.r.t. their desired departure time: 600 seconds
+Maximum amount of time a passenger can depart too late w.r.t. their desired departure time: 600 seconds
+Maximum amount of time a passenger can depart too late or too early w.r.t. their promised pick-up time: 600 seconds
+Maximum amount of time a bus can be idle to accomodate a request: 300 seconds
+Maximum amount of time a passenger has to wait to receive a response after sending a request for transportation: 300 seconds
+
+Desired arrival times (DAT) of the passengers and time-stamp of request (TSR) in seconds: 
+p_1:	DAT=10430	TSR=7646
+p_2:	DAT=10038	TSR=6753
+p_3:	DAT=10309	TSR=7633
+p_4:	DAT=10025	TSR=6738
+p_5:	DAT=10416	TSR=7536
+p_6:	DAT=10361	TSR=7519
+p_7:	DAT=10292	TSR=7889
+p_8:	DAT=10146	TSR=7787
+p_9:	DAT=10374	TSR=7594
+p_10:	DAT=10104	TSR=7259
+p_11:	DAT=10322	TSR=7055
+p_12:	DAT=10044	TSR=7375
+p_13:	DAT=10086	TSR=7331
+p_14:	DAT=10158	TSR=7286
+p_15:	DAT=11041	TSR=8480
+p_16:	DAT=11001	TSR=7412
+p_17:	DAT=11383	TSR=9446
+p_18:	DAT=11254	TSR=9420
+p_19:	DAT=11255	TSR=8114
+p_20:	DAT=11101	TSR=7852
+p_21:	DAT=11362	TSR=8257
+p_22:	DAT=11194	TSR=9045
+p_23:	DAT=11325	TSR=8374
+p_24:	DAT=10976	TSR=8580
+p_25:	DAT=10992	TSR=8906
+p_26:	DAT=11110	TSR=7655
+p_27:	DAT=11067	TSR=8096
+p_28:	DAT=11185	TSR=8104
+p_29:	DAT=12205	TSR=8669
+p_30:	DAT=12142	TSR=10274
+p_31:	DAT=12152	TSR=9296
+p_32:	DAT=11930	TSR=9364
+p_33:	DAT=11996	TSR=10191
+p_34:	DAT=12073	TSR=9593
+p_35:	DAT=11942	TSR=9977
+p_36:	DAT=12221	TSR=9769
+p_37:	DAT=11874	TSR=8291
+p_38:	DAT=11857	TSR=8749
+p_39:	DAT=12023	TSR=9219
+p_40:	DAT=12268	TSR=9924
+p_41:	DAT=12018	TSR=8789
+p_42:	DAT=11938	TSR=8613
+p_43:	DAT=13006	TSR=9797
+p_44:	DAT=12961	TSR=11035
+p_45:	DAT=13023	TSR=9774
+p_46:	DAT=13157	TSR=10113
+p_47:	DAT=13102	TSR=10498
+p_48:	DAT=13194	TSR=10758
+p_49:	DAT=12735	TSR=9899
+p_50:	DAT=12768	TSR=9250
+
+Desired departure times (DDT) of the passengers and time-stamp of request (TSR) in seconds: 
+p_51:	DDT=6439	TSR=4847
+p_52:	DDT=7056	TSR=5798
+p_53:	DDT=6696	TSR=5736
+p_54:	DDT=7149	TSR=5654
+p_55:	DDT=6476	TSR=5148
+p_56:	DDT=6611	TSR=5461
+p_57:	DDT=6593	TSR=5349
+p_58:	DDT=6534	TSR=4973
+p_59:	DDT=7017	TSR=5325
+p_60:	DDT=6982	TSR=5240
+p_61:	DDT=6417	TSR=5354
+p_62:	DDT=7124	TSR=5886
+p_63:	DDT=6471	TSR=4733
+p_64:	DDT=6832	TSR=5158
+p_65:	DDT=7572	TSR=6087
+p_66:	DDT=7478	TSR=5846
+p_67:	DDT=7339	TSR=5676
+p_68:	DDT=7915	TSR=6805
+p_69:	DDT=8026	TSR=6988
+p_70:	DDT=7618	TSR=6047
+p_71:	DDT=7625	TSR=6138
+p_72:	DDT=7664	TSR=6365
+p_73:	DDT=7768	TSR=6127
+p_74:	DDT=7798	TSR=6269
+p_75:	DDT=7758	TSR=5966
+p_76:	DDT=7826	TSR=6160
+p_77:	DDT=7496	TSR=5702
+p_78:	DDT=7655	TSR=6251
+p_79:	DDT=8349	TSR=7246
+p_80:	DDT=8607	TSR=7656
+p_81:	DDT=8707	TSR=7460
+p_82:	DDT=8623	TSR=6831
+p_83:	DDT=8679	TSR=6937
+p_84:	DDT=8238	TSR=7250
+p_85:	DDT=8392	TSR=6801
+p_86:	DDT=8319	TSR=7202
+p_87:	DDT=8932	TSR=7492
+p_88:	DDT=8888	TSR=7118
+p_89:	DDT=8662	TSR=6898
+p_90:	DDT=8917	TSR=7660
+p_91:	DDT=8797	TSR=7237
+p_92:	DDT=8715	TSR=7461
+p_93:	DDT=9393	TSR=8173
+p_94:	DDT=9802	TSR=8698
+p_95:	DDT=9726	TSR=8216
+p_96:	DDT=9101	TSR=7731
+p_97:	DDT=9596	TSR=7882
+p_98:	DDT=9251	TSR=8125
+p_99:	DDT=9747	TSR=8051
+p_100:	DDT=9213	TSR=8028
+
+Walking time between passengers and bus stops in seconds: 
+passengers correspond with the rows, bus stops correspond with the columns 
+the mandatory stops are listed first, then the optional stops are listed
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	560	118	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	792	844	x	715	780	x	226	322	125	318	303	0	592	295	656	x	843	722	x	x	766	750	x	x	x	x	x	x	x	x	
+x	x	x	x	x	854	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	307	430	514	202	154	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	846	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	747	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	817	799	708	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	605	x	x	x	x	821	557	542	784	681	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	626	282	318	631	686	332	413	498	x	x	x	x	838	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	785	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	520	x	x	x	x	x	x	x	838	x	x	489	x	x	x	756	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	799	217	192	385	539	435	673	765	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	413	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	516	552	x	x	627	593	291	658	678	672	622	469	x	618	504	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	669	x	860	602	x	817	478	331	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	210	312	439	661	120	264	225	323	
+x	x	x	x	x	x	x	x	x	x	x	720	x	832	x	739	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	333	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	766	822	487	158	309	473	552	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	855	x	x	x	678	715	632	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	549	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	557	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	750	758	722	x	x	800	725	753	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	796	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	829	x	x	658	431	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	395	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	588	596	560	711	x	638	563	591	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	773	836	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	719	348	301	243	210	40	547	330	195	x	x	x	x	x	x	804	748	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	807	x	591	528	709	483	645	759	167	505	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	860	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	633	356	357	438	771	x	716	x	
+x	x	x	723	511	624	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	492	457	336	388	539	123	487	617	577	788	721	609	x	596	775	437	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	369	432	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	862	149	273	394	454	493	502	577	329	x	x	x	x	x	x	x	807	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	753	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	741	490	352	687	730	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	151	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	722	777	728	399	433	714	794	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	601	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	705	709	x	527	830	x	x	174	34	165	714	832	x	835	x	x	x	x	x	x	x	x	x	
+720	750	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	469	295	432	643	411	578	354	597	
+x	x	x	x	x	x	691	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	784	741	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	677	x	x	x	x	x	x	x	x	x	x	x	x	x	693	745	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	725	x	x	x	x	x	583	686	611	702	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	504	x	695	457	x	652	190	275	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	852	743	640	622	531	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	686	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	651	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	695	338	373	x	x	543	391	64	x	x	x	x	825	x	x	860	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	636	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	798	
+x	x	x	x	858	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	706	830	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	618	573	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	420	545	665	725	764	693	849	600	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	731	x	x	x	x	x	x	x	x	x	x	653	x	x	x	418	657	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	725	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	845	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	485	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	848	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	745	x	x	732	x	x	416	565	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	844	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	855	x	x	x	827	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	755	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	847	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+773	803	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	266	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	835	731	713	622	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	750	784	747	x	x	x	x	x	x	x	x	
+x	x	779	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	814	x	x	627	336	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	402	x	x	x	x	x	x	x	x	x	x	782	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	667	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	646	423	461	640	329	549	552	784	537	743	660	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	380	218	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	758	637	689	840	531	739	x	192	376	310	313	487	184	592	254	812	x	x	822	x	x	x	851	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	809	762	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	466	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	539	434	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	754	633	685	836	659	614	x	90	282	314	45	482	316	334	133	794	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	701	708	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	720	596	475	484	622	771	375	755	380	409	542	272	652	590	268	295	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	726	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	818	717	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	309	781	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	692	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	756	554	661	796	660	789	565	804	
+x	x	x	x	x	x	x	390	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	557	x	826	390	x	604	602	399	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	758	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	700	x	x	x	x	x	653	637	x	776	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	597	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	755	493	462	493	390	483	442	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+795	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	790	853	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	809	845	x	x	x	x	583	365	385	379	330	176	683	325	211	x	x	x	x	x	x	798	809	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	808	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	611	334	370	496	629	797	573	816	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	544	667	751	439	391	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	802	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	547	491	359	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	829	x	x	x	x	x	x	x	x	x	788	x	x	x	282	638	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	398	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	801	802	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	696	650	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	644	642	861	466	654	x	x	294	239	370	510	627	720	631	663	x	x	x	x	x	x	x	x	
+x	624	766	x	x	x	x	x	x	x	x	x	x	x	x	x	572	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	833	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	525	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	684	705	788	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	467	747	712	295	169	546	809	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	655	x	779	699	x	795	456	703	x	x	x	863	548	651	623	714	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	301	368	393	365	667	151	643	637	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	818	717	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	719	684	553	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	806	544	807	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	718	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	850	x	x	768	x	x	x	x	x	294	593	686	315	293	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	596	624	443	764	x	584	695	x	x	x	713	682	367	470	680	771	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	856	x	x	750	703	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	763	x	x	658	611	x	x	x	x	x	x	x	x	
+693	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	726	x	x	555	394	730	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	787	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	642	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	694	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+x	x	x	x	x	x	x	x	804	x	x	791	x	x	475	624	x	x	x	x	821	x	849	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	x	
+
+Travel time between bus stops in seconds: 
+0	422	541	622	1387	923	1250	1632	472	436	445	449	352	468	505	482	445	571	561	557	603	582	630	649	644	698	688	624	596	700	689	702	763	788	813	813	831	788	840	803	907	977	966	934	986	838	962	894	1059	1090	1090	1057	1118	1136	1049	1067	1410	1427	1456	1479	1350	1356	1375	1355	
+321	0	301	382	1147	683	1010	1392	321	252	262	345	168	299	377	402	165	292	336	372	406	385	433	451	404	458	448	383	356	460	448	462	523	548	573	573	591	548	600	563	667	737	726	694	746	598	722	654	818	850	850	817	878	896	809	827	1170	1187	1216	1239	1110	1116	1135	1115	
+490	172	0	238	1003	538	865	1248	492	423	433	516	339	471	539	573	147	257	301	336	370	349	398	416	259	314	304	240	238	316	305	318	378	403	428	428	446	403	456	418	523	592	581	550	602	454	578	510	674	706	706	672	733	752	665	683	1026	1043	1071	1095	965	972	991	970	
+626	309	136	0	767	302	629	1012	629	560	569	652	475	607	634	696	284	369	412	448	482	462	460	441	85	91	81	110	172	95	81	82	142	167	192	192	210	167	220	182	287	356	345	314	365	218	342	274	438	470	470	436	497	516	429	447	789	807	835	858	729	736	755	734	
+838	520	346	211	0	218	545	927	840	771	780	863	686	818	843	905	495	580	624	660	693	672	669	651	296	302	292	321	383	306	292	294	121	146	171	171	189	122	199	161	203	272	261	230	281	172	258	190	354	386	386	352	413	432	345	363	705	723	751	774	645	652	671	650	
+922	604	431	296	464	0	336	719	924	855	864	948	771	903	928	990	579	664	708	744	778	757	754	736	382	388	378	407	469	392	378	360	207	184	159	159	225	181	187	201	38	77	52	77	73	231	132	72	146	177	177	133	194	213	125	144	497	514	542	566	436	443	462	441	
+1135	817	644	508	296	212	0	521	1124	1068	1077	1123	983	1115	1074	1136	792	877	921	944	925	904	900	882	593	600	589	619	680	603	590	573	418	397	372	372	438	393	399	414	250	252	211	280	231	444	299	285	152	117	132	158	115	121	188	185	290	307	336	359	230	237	256	244	
+1659	1341	1168	1032	821	736	552	0	1584	1592	1594	1583	1508	1602	1534	1596	1316	1401	1412	1403	1384	1363	1360	1341	1118	1124	1114	1143	1205	1128	1114	1090	943	921	896	896	962	918	923	939	774	766	736	805	756	969	813	809	654	618	622	683	640	644	712	705	331	278	298	317	314	339	294	379	
+476	352	569	650	1334	950	1216	1563	0	89	87	23	153	21	78	98	375	317	273	264	204	224	241	260	671	726	716	651	623	728	716	730	790	815	840	840	858	815	868	830	934	1004	993	962	1013	866	990	922	1068	1098	1100	992	1014	1023	969	951	1332	1350	1378	1401	1272	1278	1298	1287	
+440	283	500	581	1346	881	1209	1590	89	0	51	113	84	67	166	188	306	334	291	287	233	254	296	314	602	657	647	582	554	659	647	661	721	746	771	771	789	746	799	762	865	935	925	893	944	797	921	853	1017	1049	1049	1015	1048	1057	1004	985	1367	1384	1412	1436	1306	1313	1332	1314	
+450	292	509	590	1316	890	1198	1545	87	51	0	110	93	72	114	139	315	294	251	241	180	201	244	262	611	667	656	592	563	668	657	670	730	755	781	781	798	755	808	770	875	944	933	903	954	806	930	862	1026	1058	1058	974	996	1005	952	934	1314	1332	1360	1384	1255	1261	1280	1269	
+452	375	591	673	1341	973	1223	1570	23	113	110	0	176	44	85	87	398	333	289	280	219	240	248	267	694	749	739	675	647	751	740	753	813	838	864	864	882	838	892	854	958	1027	1017	985	1037	889	1013	945	1075	1105	1107	999	1021	1030	976	958	1339	1357	1385	1408	1279	1285	1305	1293	
+356	198	415	497	1262	796	1124	1506	153	84	93	176	0	131	208	233	221	253	209	205	251	230	278	296	517	573	562	498	470	574	563	576	636	662	687	687	705	661	715	677	781	851	840	809	860	712	836	768	933	965	964	931	992	1010	923	941	1284	1302	1330	1353	1224	1230	1249	1229	
+476	330	547	628	1331	929	1213	1560	21	67	78	44	131	0	100	120	353	309	265	256	196	216	259	277	650	704	694	629	602	706	694	708	769	794	818	818	836	794	846	809	913	983	972	940	992	844	968	900	1064	1095	1096	989	1011	1020	966	948	1329	1347	1375	1398	1269	1276	1295	1284	
+516	407	534	633	1284	937	1166	1513	86	166	114	85	208	107	0	71	403	276	232	223	162	183	191	210	675	726	715	655	654	729	716	717	777	802	827	827	845	802	854	817	921	991	972	948	992	852	976	908	1018	1048	1050	942	964	973	919	901	1282	1300	1328	1351	1222	1229	1248	1237	
+474	472	658	758	1408	1061	1290	1637	120	209	197	96	273	141	153	0	495	400	357	348	287	307	316	334	792	846	836	771	744	848	836	841	901	926	951	951	969	926	979	941	1045	1115	1096	1073	1117	976	1100	1032	1143	1172	1174	1066	1088	1097	1044	1026	1407	1424	1452	1476	1346	1353	1372	1361	
+450	138	206	287	1052	587	915	1296	345	276	285	368	191	323	400	425	0	125	169	205	239	218	266	285	308	363	353	288	261	365	353	367	428	452	477	477	495	452	505	468	572	642	631	599	651	503	627	559	723	755	755	722	783	801	713	732	1074	1092	1120	1144	1014	1021	1040	1020	
+576	264	257	377	1142	677	1005	1386	328	334	306	330	253	314	281	343	125	0	43	79	113	92	140	158	399	453	443	379	377	455	443	457	517	542	567	567	585	542	595	557	662	731	720	689	741	593	717	649	813	845	845	812	872	891	803	822	1165	1182	1210	1234	1104	1111	1130	1110	
+566	308	301	421	1163	721	1045	1392	285	291	262	287	209	270	237	299	169	43	0	35	69	48	96	115	442	497	487	422	421	499	487	501	561	586	611	611	629	586	639	602	705	775	765	733	784	637	760	693	857	889	889	821	843	852	798	780	1161	1179	1207	1230	1101	1107	1126	1115	
+562	344	336	457	1154	757	1036	1383	278	287	258	277	205	266	229	290	205	79	35	0	60	39	88	106	478	533	523	458	457	535	523	537	597	622	647	647	665	622	675	638	742	811	800	769	821	673	796	729	888	918	919	812	834	843	789	771	1152	1170	1198	1222	1092	1099	1118	1106	
+607	378	370	484	1135	787	1017	1364	218	261	209	216	251	217	168	230	239	113	69	60	0	20	63	81	512	567	556	492	490	568	557	567	627	652	678	678	696	652	705	668	772	842	823	799	843	703	827	759	869	898	900	792	814	824	770	752	1133	1151	1179	1202	1073	1079	1099	1087	
+586	357	349	463	1114	766	996	1343	238	282	230	237	230	238	189	251	218	92	48	39	20	0	48	66	491	546	535	471	469	548	536	547	606	631	657	657	675	631	684	647	751	821	802	778	823	682	806	738	848	878	879	772	794	803	749	731	1112	1130	1158	1182	1052	1059	1078	1066	
+635	406	399	465	1115	768	997	1345	240	306	254	238	278	261	190	251	267	141	97	88	63	48	0	17	531	557	546	513	519	560	547	548	608	633	658	658	676	633	686	648	752	822	803	780	824	684	807	740	850	879	881	773	795	805	751	733	1114	1131	1160	1183	1053	1060	1079	1068	
+654	424	417	483	1134	786	1016	1363	258	324	272	257	297	280	208	270	286	160	115	107	82	67	17	0	550	575	565	531	537	579	566	567	626	651	676	676	694	651	704	667	771	840	822	798	842	702	826	758	868	897	899	792	813	823	769	751	1132	1150	1178	1201	1072	1078	1097	1086	
+679	361	189	85	849	384	712	1093	682	613	622	705	528	660	704	762	336	422	466	502	535	515	545	527	0	85	74	46	108	59	74	145	224	249	274	274	280	249	302	264	368	438	427	396	447	300	406	356	520	552	552	518	579	598	510	528	871	889	917	940	812	818	837	816	
+717	400	226	90	854	389	716	1099	719	650	660	743	566	698	725	787	374	459	504	539	573	552	551	532	84	0	10	125	159	44	57	150	229	254	279	279	265	254	303	269	374	443	432	401	452	305	390	360	525	557	556	523	584	603	515	534	876	894	922	945	816	823	842	821	
+707	389	216	80	843	378	706	1088	709	640	649	732	556	687	715	776	364	449	492	529	563	542	540	522	74	10	0	115	149	33	47	139	218	243	269	269	254	243	292	259	363	433	422	390	442	294	379	350	515	546	546	513	574	592	505	523	865	883	911	935	806	812	831	811	
+632	314	141	110	874	409	737	1119	634	566	574	658	481	613	657	715	289	375	418	454	488	467	508	489	84	149	138	0	61	106	154	189	249	274	299	299	280	274	318	290	394	463	452	421	473	325	405	381	545	577	577	544	604	623	535	554	897	914	943	966	836	843	862	842	
+602	284	139	161	925	460	787	1169	605	536	545	628	452	584	659	686	260	377	421	457	490	469	518	536	95	160	149	70	0	117	165	221	300	325	342	342	291	325	330	303	444	491	503	472	523	376	416	431	577	613	608	594	655	673	586	604	947	965	993	1016	887	893	913	892	
+716	399	226	95	859	394	722	1104	719	650	659	742	566	697	730	792	374	463	507	543	577	556	556	537	60	44	33	107	115	0	81	150	234	259	272	272	220	259	258	233	379	420	437	406	456	310	345	365	506	542	537	528	589	608	520	539	882	899	927	951	821	828	847	827	
+707	389	216	80	843	379	707	1088	709	640	650	733	556	688	715	777	364	450	493	530	563	542	541	522	74	57	47	115	177	81	0	140	219	244	269	269	287	244	297	259	364	433	422	391	443	295	416	350	515	547	546	513	574	593	505	523	866	884	912	936	806	813	832	812	
+709	392	219	82	827	363	687	1070	712	643	652	736	559	690	718	779	367	452	496	532	566	545	543	525	145	151	140	183	221	150	141	0	188	205	201	201	150	247	189	162	336	350	383	339	386	297	276	302	436	472	468	497	557	577	489	507	847	865	893	916	787	794	813	792	
+769	452	278	142	673	208	536	918	771	702	712	795	618	750	776	838	426	512	556	592	625	604	602	583	228	234	223	253	315	237	224	188	0	24	49	49	77	73	77	49	185	254	248	190	268	124	218	150	336	371	367	342	403	422	335	353	696	713	741	765	636	642	661	641	
+794	477	303	167	650	186	513	895	796	727	737	820	643	775	800	863	451	537	581	617	650	629	626	608	253	259	248	278	340	263	249	205	24	0	24	24	70	83	52	42	160	229	223	165	243	134	193	125	311	346	342	320	381	399	312	330	673	690	719	742	613	619	638	618	
+820	502	328	192	625	160	488	869	822	753	762	845	668	800	826	887	477	562	606	642	675	655	651	633	278	284	274	303	341	270	274	201	49	24	0	0	65	57	27	42	134	204	197	140	218	109	168	100	285	321	317	294	356	374	287	305	647	665	693	717	588	594	613	593	
+820	502	328	192	625	160	488	869	822	753	762	845	668	800	826	887	477	562	606	642	675	655	651	633	278	284	274	303	341	270	274	201	49	24	0	0	65	57	27	42	134	204	197	140	218	109	168	100	285	321	317	294	356	374	287	305	647	665	693	717	588	594	613	593	
+838	521	348	211	691	226	554	936	840	772	781	864	687	819	845	907	495	581	625	661	694	673	671	652	278	263	252	285	291	220	292	150	77	70	65	65	0	124	57	35	200	228	262	207	264	175	153	166	314	350	345	360	422	440	353	371	713	731	759	783	654	660	679	659	
+878	560	387	251	599	134	462	844	881	812	821	904	727	858	885	946	535	621	664	700	734	713	710	691	336	343	332	362	400	329	333	259	108	83	57	57	124	0	85	100	119	189	178	146	198	50	174	106	270	302	302	269	330	348	261	279	622	639	668	691	562	568	587	567	
+847	530	356	220	653	188	515	897	850	781	790	873	696	828	854	915	504	589	633	669	703	682	679	661	306	301	291	324	330	259	302	189	77	52	27	27	57	85	0	70	162	228	225	168	245	136	154	128	313	349	345	322	383	402	314	332	675	693	721	744	615	622	641	620	
+810	493	320	183	668	203	530	912	813	744	754	836	660	791	817	879	468	553	597	633	667	646	643	624	269	275	265	295	303	233	266	162	49	42	42	42	35	100	70	0	176	246	240	183	260	151	189	142	328	364	360	337	398	417	329	347	690	708	736	759	630	636	655	635	
+931	613	440	305	516	51	379	760	933	864	873	956	780	911	937	998	588	673	717	753	787	766	762	744	390	397	386	416	475	400	387	334	183	158	133	133	199	154	161	175	0	69	63	49	82	205	102	34	151	186	182	185	246	265	178	196	538	556	584	607	479	485	504	483	
+994	676	503	368	512	121	364	746	996	927	936	1020	843	974	1000	1061	651	736	780	816	850	829	825	807	454	460	450	479	490	419	450	349	238	214	188	188	226	210	216	231	69	0	60	47	63	261	72	88	112	148	144	209	246	265	203	222	524	541	570	593	463	470	489	469	
+987	669	495	361	466	64	327	709	989	920	929	1012	835	967	973	1035	644	729	773	809	824	803	799	781	447	452	442	472	525	454	443	384	246	221	196	196	261	218	224	238	63	60	0	68	19	269	107	97	106	141	137	150	208	227	142	161	487	505	533	556	427	433	452	432	
+946	628	455	320	534	100	396	778	948	879	889	972	795	927	952	1014	603	689	732	768	802	781	778	759	406	412	401	431	480	410	402	339	190	165	140	140	207	162	168	183	48	74	68	0	88	213	63	40	156	192	187	219	277	296	211	229	556	573	602	625	496	502	522	501	
+1007	689	516	381	475	84	336	719	1009	940	950	1032	856	987	994	1056	664	749	793	829	844	823	820	801	467	473	462	492	528	457	463	387	266	241	216	216	264	238	244	259	82	63	19	88	0	289	110	117	108	144	139	165	218	237	162	181	497	514	542	566	436	443	462	441	
+1387	1070	896	760	549	465	411	793	1382	1320	1329	1380	1236	1368	1331	1393	1044	1129	1173	1201	1182	1161	1157	1139	846	852	842	871	933	856	842	825	671	649	624	624	690	646	652	667	503	502	464	533	484	0	549	537	402	367	382	411	368	396	440	437	571	588	617	640	510	517	536	516	
+974	656	483	348	560	152	411	793	976	907	916	999	823	954	980	1041	631	716	760	796	829	809	805	787	404	389	378	411	417	346	418	276	218	193	168	168	153	190	152	189	102	74	107	63	110	241	0	67	160	196	191	256	294	312	251	269	571	589	617	640	511	517	537	516	
+906	588	415	280	549	84	411	794	908	839	848	931	755	886	912	973	563	648	691	728	762	741	737	719	365	372	361	390	442	371	362	301	150	125	100	100	166	122	128	142	34	103	97	40	117	172	67	0	185	220	216	218	279	298	210	229	571	589	617	640	511	517	537	516	
+1071	753	580	445	425	148	265	646	1069	1004	1013	1068	919	1051	1019	1081	727	813	857	888	869	848	845	826	531	537	526	556	577	506	527	437	334	309	284	284	313	306	312	327	151	112	106	156	108	357	160	185	0	35	31	162	182	201	188	206	424	441	470	493	364	371	390	369	
+1107	789	615	480	389	184	229	610	1104	1039	1049	1103	955	1087	1055	1117	763	849	893	924	905	884	881	862	566	573	562	592	613	542	563	472	370	345	320	320	349	342	348	363	186	148	141	192	144	393	196	220	35	0	30	145	165	183	171	189	388	406	434	458	328	335	354	334	
+1103	785	611	476	401	180	240	618	1100	1035	1045	1099	951	1083	1050	1113	759	845	889	920	901	880	876	858	562	568	558	588	609	538	559	468	366	341	316	316	345	338	343	359	182	144	137	188	140	389	191	216	31	26	0	171	191	209	197	215	399	417	445	469	339	346	365	345	
+1074	756	583	448	353	151	266	669	1015	1008	1017	1014	923	1033	965	1027	731	817	843	834	816	795	791	773	534	540	530	559	621	544	530	513	359	336	311	311	377	333	339	354	190	212	151	220	171	384	259	224	162	145	175	0	64	82	42	60	439	456	484	508	378	385	404	392	
+1126	807	635	499	324	203	201	605	1016	1059	1027	1015	974	1034	966	1028	783	868	845	836	817	796	792	774	585	592	581	610	672	595	582	564	410	388	363	363	429	384	390	405	241	250	203	271	222	435	298	276	186	169	194	66	0	37	90	72	377	395	423	447	317	324	343	328	
+1143	825	651	516	354	219	214	603	1033	1075	1044	1032	991	1052	983	1045	799	885	861	853	834	813	809	791	602	609	598	628	689	612	599	581	427	404	379	379	446	401	407	422	258	267	219	288	240	452	314	292	203	186	206	82	45	0	107	89	373	390	419	442	313	319	338	327	
+1067	749	576	441	380	144	292	677	972	1000	983	971	915	990	922	984	724	809	800	792	773	752	748	730	527	533	522	552	614	537	523	505	352	329	304	304	370	325	331	346	182	204	143	212	164	377	252	217	189	171	202	45	91	107	0	17	446	464	492	516	386	393	412	401	
+1085	767	594	459	392	162	274	659	954	1016	964	953	934	972	904	966	742	826	783	773	754	733	730	712	545	551	541	570	632	555	541	523	370	347	322	322	388	343	350	364	201	223	162	230	182	394	270	235	207	189	220	51	72	89	17	0	428	446	474	498	368	375	394	382	
+1433	1115	941	806	595	510	297	328	1328	1365	1339	1327	1281	1347	1278	1340	1089	1175	1157	1148	1129	1108	1104	1086	892	897	887	916	978	901	887	871	716	695	669	669	736	691	697	712	548	549	509	578	530	742	597	582	450	414	430	452	393	389	468	450	0	60	89	107	111	147	136	187	
+1463	1145	972	836	625	540	327	267	1359	1396	1369	1358	1311	1377	1309	1371	1120	1205	1187	1178	1159	1138	1135	1117	922	928	918	947	1009	932	918	901	747	725	700	700	766	722	727	742	578	580	539	609	560	773	628	613	480	445	460	483	423	420	498	480	64	0	27	91	99	135	110	175	
+1479	1161	987	852	640	556	343	292	1375	1412	1385	1374	1327	1393	1325	1386	1136	1221	1203	1194	1175	1154	1150	1132	937	944	933	962	1024	947	934	917	762	741	715	715	781	737	743	758	594	596	555	624	575	788	643	628	496	460	476	498	439	435	514	496	80	27	0	70	114	151	138	190	
+1507	1189	1016	880	669	584	371	317	1403	1440	1413	1402	1356	1421	1353	1415	1164	1249	1231	1222	1203	1182	1179	1160	966	972	961	991	1053	976	962	945	791	769	744	744	810	766	771	787	622	624	584	653	604	817	672	657	524	488	504	527	467	463	542	524	113	71	72	0	158	196	174	235	
+1374	1056	882	747	535	451	238	290	1270	1307	1280	1269	1222	1288	1219	1281	1030	1115	1097	1089	1070	1049	1045	1027	832	838	828	857	919	842	828	812	657	636	610	610	676	632	638	653	489	491	450	519	470	683	538	523	391	355	371	393	334	330	409	390	82	86	114	178	0	36	25	75	
+1378	1060	887	751	540	455	243	352	1274	1311	1284	1273	1227	1292	1224	1286	1035	1121	1103	1093	1074	1053	1050	1031	837	843	832	862	924	847	833	817	662	640	615	615	681	637	643	658	494	495	455	524	475	688	543	528	396	360	375	398	338	335	414	396	149	153	182	241	66	0	81	39	
+1399	1081	908	772	561	476	263	283	1295	1332	1305	1294	1248	1313	1245	1307	1056	1142	1124	1114	1095	1074	1071	1052	858	864	853	883	945	868	854	838	683	661	636	636	702	658	664	679	515	516	476	545	496	709	564	549	417	381	396	419	359	356	434	417	107	95	122	186	25	51	0	91	
+1403	1085	912	776	565	480	267	326	1299	1336	1309	1298	1252	1317	1249	1311	1060	1145	1127	1118	1099	1078	1075	1056	861	868	857	887	948	871	858	841	687	665	640	640	706	662	668	682	519	520	480	548	500	712	567	553	421	385	400	423	363	360	438	420	123	127	155	219	40	24	55	0	

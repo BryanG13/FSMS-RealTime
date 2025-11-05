@@ -15,13 +15,6 @@ endif()
 cmake_policy(SET CMP0144 NEW)
 cmake_policy(SET CMP0167 NEW)
 
-# Only enable AddressSanitizer for Debug builds --> this helps finding memory issues 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
-endif()
-
-
 # Find OpenMP for Clang
 set(OpenMP_CXX_LIBRARIES "/opt/homebrew/Cellar/libomp/21.1.1/lib/libomp.dylib")
 set(OpenMP_CXX_LIB_NAMES "omp")
