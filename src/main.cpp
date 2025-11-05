@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * FSMS-RealTime: Flexible Semi-Fixed Route Bus System with Real-Time Demand
+ * 
+ * A dynamic demand-responsive transit (DRT) optimization system that adapts
+ * semi-fixed bus routes in real-time to accommodate passenger requests while
+ * maintaining service frequency and capacity constraints.
+ * 
+ * Key Features:
+ * - Dynamic route adjustment based on real-time passenger demand
+ * - Mandatory stops with flexible optional stop insertion
+ * - Multi-objective optimization (travel time, walking distance, schedule adherence)
+ * - Parallel search using OpenMP for solution exploration
+ * - Simulated annealing and large neighborhood search (LNS)
+ ******************************************************************************/
+
 #include <fstream>
 #include <iostream>
 #include <omp.h>
@@ -14,10 +29,43 @@
 #define _CRTDBG_MAP_ALLOC_NEW
 #include <assert.h>
 #include <crtdbg.h>
-
 #endif
 
 using namespace std;
+
+/*******************************************************************************
+ * PATH UTILITIES
+ ******************************************************************************/
+
+/**
+ * Converts relative path to absolute path using DATA_ROOT compile definition
+ * Ensures files can be found regardless of current working directory
+ * 
+ * @param relativePath Path relative to project root (e.g., "data/input/file.txt")
+ * @return Absolute path to file
+ */
+inline string dataPath(const string& relativePath) {
+    #ifndef DATA_ROOT
+    #define DATA_ROOT "."
+    #endif
+    return string(DATA_ROOT) + "/" + relativePath;
+}
+
+/*******************************************************************************
+ * CSV PARSING & DATA LOADING FUNCTIONS
+ ******************************************************************************/
+
+/**
+ * Reads walking time matrix from CSV file (Antwerp dataset format)
+ * 
+ * @param path Path to walking_data.csv file
+ * @param TT Travel time matrix to populate [passengers][stops]
+ * @param R Number of passenger requests
+ * @param S Total number of bus stops
+ * 
+ * CSV Format: Each row contains passenger walking times to reachable stops
+ * Columns: origin, node_id, max_walking, walk_speed, stops_list, distances_list
+ */
 inline void read_walking_matrix(string path, double **&TT, int R, int S) {
     ifstream data(path);
     string line;
@@ -116,24 +164,32 @@ inline void read_walking_matrix(string path, double **&TT, int R, int S) {
         bus_stops.push_back(stops);
         l_it++;
     }
+    
+    // Populate travel time matrix: TT[passenger][stop] = walking_time
     int N_r = speed.size(), N_s = 0;
-
     for (int i = 0; i < N_r; i++) {
         N_s = distance[i].size();
-
         for (int j = 0; j < N_s; j++) {
-            int s = bus_stops[i][j];
-            int dist = distance[i][j];
-            double time = dist / speed[i];
+            int s = bus_stops[i][j];        // Stop ID
+            int dist = distance[i][j];      // Walking distance in meters
+            double time = dist / speed[i];  // Walking time = distance / speed
             TT[i][s] = time;
         }
     }
-    // cout << " DATA\n";
 
     data.close();
-    // exit(0);
 }
 
+/**
+ * Reads bus travel time matrix from CSV file
+ * 
+ * @param path Path to travel_time.csv file
+ * @param TT Travel time matrix to populate [stops][stops]
+ * @param L Number of bus stops
+ * 
+ * CSV Format: Matrix of travel times between all stop pairs
+ * Row/Column 0 contains headers, actual data starts at [1][1]
+ */
 inline void read_travel_matrix(string path, double **&TT, int L) {
     ifstream data(path);
     string line;
@@ -149,21 +205,27 @@ inline void read_travel_matrix(string path, double **&TT, int L) {
         parsedCsv.push_back(parsedRow);
     }
 
-    // cout << " DATA\n";
-    // cout << parsedCsv.size() << endl;
-    // cout << "S " << L << endl;
+    // Parse travel times from CSV (skip header row, scale by 0.58 factor)
     for (int i = 1; i <= L; i++) {
-        // cout << parsedCsv[i].size() << endl;
         for (int j = 1; j <= L; j++) {
-            TT[i - 1][j - 1] = stoi(parsedCsv[i][j]) * 0.58;
-            // cout << TT[i - 1][j - 1] << "\t";
+            TT[i - 1][j - 1] = stoi(parsedCsv[i][j]) * 0.58;  // Convert to seconds
         }
-        // cout << endl;
     }
     data.close();
-    // exit(0);
 }
 
+/*******************************************************************************
+ * UTILITY FUNCTIONS
+ ******************************************************************************/
+
+/**
+ * Finds the index of the minimum value in an array
+ * Used to determine which bus is available first
+ * 
+ * @param bd Array of bus departure times
+ * @param B Number of buses
+ * @return Index of the bus with minimum departure time
+ */
 inline int iMin(double bd[], int B) {
     double imin = INT32_MAX;
     int ind = -1;
@@ -175,31 +237,44 @@ inline int iMin(double bd[], int B) {
     }
     return ind;
 }
-// second smallest of a set
+
+/**
+ * Finds the second smallest value in an array
+ * Used to check frequency constraints with next bus
+ * 
+ * @param bd Array of bus departure times
+ * @param B Number of buses
+ * @return Second smallest departure time
+ */
 inline double iMin2(double bd[], int B) {
     double first = INT_MAX, second = INT_MAX;
     for (int i = 0; i < B; i++) {
-        /* If current element is smaller than first
-        then update both first and second */
+        // If current element is smaller than first, update both first and second
         if (bd[i] <= first) {
             second = first;
             first = bd[i];
         }
-
-        /* If bd[i] is in between first and second
-        then update second */
+        // If bd[i] is between first and second, update second
         else if (bd[i] < second && bd[i] != first) {
             second = bd[i];
         }
     }
     if (second == INT_MAX) {
-        return 0;
+        return 0;  // No second value found
     }
     else {
         return second;
     }
 }
 
+/*******************************************************************************
+ * SORTING FUNCTIONS (QuickSort for stop/passenger ordering)
+ ******************************************************************************/
+
+/**
+ * Partition function for QuickSort - used to sort passengers/stops by distance
+ * Simultaneously sorts both index and distance arrays
+ */
 inline int partition(int index[], double dist[], int low, int high) {
     double pivot = dist[high]; // pivot
     int i = (low - 1);         // Index of smaller element
@@ -230,28 +305,30 @@ inline int partition(int index[], double dist[], int low, int high) {
     return (i + 1);
 }
 
+/**
+ * QuickSort implementation for sorting indices by distance
+ * Used to find nearest stops for each passenger
+ */
 inline void quickSort(int index[], double dist[], int low, int high) {
     if (low < high) {
-        /* pi is partitioning index, arr[p] is now
-        at right place */
-        int pi = partition(index, dist, low, high);
-
-        // Separately sort elements before
-        // partition and after partition
-        quickSort(index, dist, low, pi - 1);
-        quickSort(index, dist, pi + 1, high);
+        int pi = partition(index, dist, low, high);  // Partitioning index
+        quickSort(index, dist, low, pi - 1);         // Sort before partition
+        quickSort(index, dist, pi + 1, high);        // Sort after partition
     }
 }
 
+/**
+ * Partition function for vector-based QuickSort
+ * Used for finding median arrival/departure times
+ */
 inline int Qpartition(vector<double> &dist, int low, int high) {
-    double pivot = dist[high]; // pivot
-    int i = (low - 1);         // Index of smaller element
+    double pivot = dist[high];
+    int i = (low - 1);
     double t0;
 
     for (int j = low; j <= high - 1; j++) {
-        // If current element is smaller than the pivot
         if (dist[j] < pivot) {
-            i++; // increment index of smaller element
+            i++;
             t0 = dist[j];
             dist[j] = dist[i];
             dist[i] = t0;
@@ -265,25 +342,29 @@ inline int Qpartition(vector<double> &dist, int low, int high) {
     return (i + 1);
 }
 
+/**
+ * QuickSort for vector of doubles
+ */
 inline void QSort(vector<double> &dist, int low, int high) {
     if (low < high) {
-        /* pi is partitioning index, arr[p] is now
-        at right place */
         int pi = Qpartition(dist, low, high);
-
-        // Separately sort elements before
-        // partition and after partition
         QSort(dist, low, pi - 1);
         QSort(dist, pi + 1, high);
     }
 }
 
+/**
+ * Finds median value in a vector
+ * Used to determine representative arrival/departure time for multiple passengers
+ * 
+ * @param a Vector of time values
+ * @return Median value (average of two middle elements if even size)
+ */
 inline double findMedian(vector<double> &a) {
-    // First we sort the array
     int n = a.size();
-    QSort(a, 0, n - 1);
+    QSort(a, 0, n - 1);  // Sort the array first
 
-    // check for even case
+    // Return middle element for odd-sized array
     if (n % 2 != 0) {
         return (double)a[n / 2];
     }
@@ -291,6 +372,47 @@ inline double findMedian(vector<double> &a) {
     return (double)(a[(n - 1) / 2] + a[n / 2]) / 2.0;
 }
 
+/*******************************************************************************
+ * CORE ROUTE OPTIMIZATION FUNCTIONS
+ ******************************************************************************/
+
+/**
+ * Finds the best bus stop to assign to an arrival-based passenger
+ * 
+ * This function evaluates all feasible stops within walking distance and selects
+ * the one that minimizes total cost while maintaining all constraints (capacity,
+ * frequency, time windows). It considers inserting the stop into the current route
+ * or using an existing stop if already visited.
+ * 
+ * @param timetable Current departure times at each stop in the route
+ * @param route Current sequence of bus stops
+ * @param traveltimes Bus travel time matrix [stop][stop]
+ * @param traveltimep Passenger walking time matrix [passenger][stop]
+ * @param closestPS Sorted list of closest stops for each passenger
+ * @param p Passenger index
+ * @param N Number of mandatory stops
+ * @param dw Maximum walking distance threshold
+ * @param best_route Optimal stop ordering reference
+ * @param M Number of optional stops per cluster
+ * @param S Total number of stops
+ * @param bd Bus departure time for current trip
+ * @param freqN Last departure time at each mandatory stop (frequency tracking)
+ * @param xt Minimum headway between buses at mandatory stops
+ * @param best_stop Previously assigned stop for this route
+ * @param arrprev Previous passenger arrival time
+ * @param arrnext Current passenger desired arrival time
+ * @param d_tl Maximum late arrival tolerance
+ * @param d_te Maximum early arrival tolerance
+ * @param yk Passenger assignments [passenger][bus, trip, stop]
+ * @param arrivals Array of desired arrival times
+ * @param R1 Number of arrival-based passengers
+ * @param R2 Number of departure-based passengers
+ * @param bus Current bus index
+ * @param trip Current trip number
+ * @param bd2 Next bus departure time (for frequency checking)
+ * @param fpm Frequency penalty multiplier
+ * @return Bus stop ID if feasible insertion found, -1 if no feasible stop exists
+ */
 inline int bestStop(vector<double> &timetable, vector<int> &route, double **traveltimes, double **traveltimep, int **closestPS,
                     int p, int N, int dw, int *best_route, int M, int S, int bd, double *freqN, int xt, int best_stop,
                     double arrprev, double arrnext, int d_tl, int d_te, int yk[][3], double *arrivals, int R1, int R2, int bus, int trip, double bd2, double fpm) {
@@ -301,30 +423,33 @@ inline int bestStop(vector<double> &timetable, vector<int> &route, double **trav
     vector<double> times, ttimetable;
     vector<int> troute;
     double UB;
-    newj = closestPS[p][0];
-    cc = 0;
-    ener = INT64_MAX;
+    
+    newj = closestPS[p][0];  // Start with closest stop
+    cc = 0;                   // Stop candidate counter
+    ener = INT64_MAX;         // Best energy (cost) found so far
     sum = 0;
     first = 0, second = 0;
     indexr = -2;
 
+    // Save current timetable and route for restoration if needed
     int nS = timetable.size();
-    double *oldtt = new double[nS]; // make copy of time table
-    double *oldR = new double[nS];  // make copy of route
+    double *oldtt = new double[nS];
+    double *oldR = new double[nS];
     for (i = 0; i < nS; i++) {
         oldtt[i] = timetable[i];
         oldR[i] = route[i];
     }
-    // cout << "p: " << p << " dat: " << arrnext / 60 << endl;
+    
+    // Try each candidate stop within walking distance
     while (traveltimep[p][closestPS[p][cc]] < dw) {
-        // cout << cc << endl;
-        sum = traveltimep[p][closestPS[p][cc]];
-        mand = int((closestPS[p][cc] - N) / M);
-        // cout << "mandatory : " << mand << endl;
+        sum = traveltimep[p][closestPS[p][cc]];  // Start with walking cost
+        mand = int((closestPS[p][cc] - N) / M);  // Which mandatory cluster does this stop belong to?
 
+        // Find position of this stop in the optimal route ordering
         auto itr = find(best_route, best_route + S, closestPS[p][cc]);
         current = distance(best_route, itr);
-        // find best place to insert cc
+        
+        // Check if stop is already in the current route
         in = false;
         int routeS = route.size();
         for (j = 0; j < routeS; j++) {
@@ -564,6 +689,39 @@ inline int bestStop(vector<double> &timetable, vector<int> &route, double **trav
     return newj;
 }
 
+/**
+ * bestStop2 - Departure-based passenger assignment
+ * 
+ * Finds the best stop to pick up a passenger who specifies desired DEPARTURE time.
+ * Similar to bestStop() but optimizes for departure time windows instead of arrivals.
+ * 
+ * @param timetable Current bus schedule (departure times at each stop)
+ * @param route Current route (stop indices)
+ * @param traveltimes Bus travel time matrix [stop][stop]
+ * @param traveltimep Walking time matrix [passenger][stop]
+ * @param closestPS Nearest stops for each passenger (sorted by distance)
+ * @param p Passenger index
+ * @param N Number of mandatory stops
+ * @param dw Maximum walking time threshold
+ * @param best_route Optimized global stop sequence
+ * @param M Optional stops per cluster
+ * @param S Total number of stops
+ * @param bd Bus last departure time
+ * @param freqN Current frequency tracking (last departure at each mandatory stop)
+ * @param newfreqN Updated frequency tracking
+ * @param xt Headway constraint
+ * @param best_stop Current best stop index
+ * @param deptprev Desired departure lower bound
+ * @param deptnext Desired departure upper bound
+ * @param d_tl/d_te Time window constraints
+ * @param yk Passenger assignments [passenger][bus/trip/stop]
+ * @param departures Desired departure times
+ * @param R1/R2 Number of arrival/departure passengers
+ * @param bus/trip Current bus and trip indices
+ * @param bd2 Alternative bus departure bound
+ * @param fpm Feasibility parameter
+ * @return Best stop index (or negative if infeasible)
+ */
 inline int bestStop2(vector<double> &timetable, vector<int> &route, double **traveltimes, double **traveltimep, int **closestPS,
                      int p, int N, int dw, int *best_route, int M, int S, int bd, double *freqN, double *newfreqN, int xt, int best_stop,
                      double deptprev, double deptnext, int d_tl, int d_te, int yk[][3], double *departures, int R1, int R2, int bus, int trip, double bd2, double fpm) {
@@ -575,28 +733,29 @@ inline int bestStop2(vector<double> &timetable, vector<int> &route, double **tra
     double t_prev = 0, UB;
     newj = closestPS[p][0];
     cc = 0;
-    ener = INT64_MAX;
+    ener = INT64_MAX;  // Best energy (cost) so far
     sum = 0;
     first = 0, second = 0;
     indexr = -2;
-    // cout << "p: " << p << endl;
+    
     int nS = timetable.size();
-    double *oldtt = new double[nS]; // make copy of time table
-    double *oldR = new double[nS];  // make copy of route
+    double *oldtt = new double[nS];  // Backup of original timetable
+    double *oldR = new double[nS];   // Backup of original route
     for (i = 0; i < nS; i++) {
         oldtt[i] = timetable[i];
         oldR[i] = route[i];
     }
+    
+    // Try each reachable stop (within walking distance)
     while (traveltimep[p][closestPS[p][cc]] < dw) {
-        // cout << cc << endl;
         sum = traveltimep[p][closestPS[p][cc]];
-        mand = int((closestPS[p][cc] - N) / M);
-        // cout << "------- stop: " << closestPS[p][cc] << endl;
-        // cout << "mandatory : " << mand << endl;
+        mand = int((closestPS[p][cc] - N) / M);  // Which cluster this stop belongs to
 
+        // Find this stop's position in the global optimized route
         auto itr = find(best_route, best_route + S, closestPS[p][cc]);
         current = distance(best_route, itr);
-        // find best place to insert cc
+        
+        // Check if stop is already in current route
         in = false;
         int rS = route.size();
         for (j = 0; j < rS; j++) {
@@ -2316,10 +2475,53 @@ inline double printpluscost(vector<vector<vector<int>>> b_xsol, vector<vector<ve
     return cost;
 }
 
+/**
+ * IMPROVEMENT FUNCTION
+ * 
+ * Performs Large Neighborhood Search (LNS) with Simulated Annealing to improve 
+ * an existing solution by:
+ * 1. Removing passengers from current routes
+ * 2. Reinserting them at better positions
+ * 3. Accepting/rejecting moves based on cost and temperature
+ * 
+ * @param B Number of buses
+ * @param N Number of mandatory stops
+ * @param M Number of optional stops per cluster
+ * @param S Total number of stops
+ * @param OG_R Total passengers
+ * @param OG_R1 Number of arrival-based passengers
+ * @param OG_R2 Number of departure-based passengers
+ * @param OGxt Minimum headway between buses
+ * @param C_OG Bus capacity
+ * @param d_dl/d_de/d_ae/d_al Time window constraints
+ * @param d_t Max deviation from promised pickup
+ * @param short_route Shortest mandatory route time
+ * @param pickup Promised pickup times
+ * @param OG_departures/OG_arrivals Passenger time preferences
+ * @param best_route Optimized stop sequence
+ * @param traveltimes Bus travel time matrix
+ * @param traveltimep Passenger walking time matrix
+ * @param closestPS Nearest stops for each passenger
+ * @param dw Maximum walking time
+ * @param b_xsol Best routes (modified in-place)
+ * @param b_Dsol Best schedules (modified in-place)
+ * @param b_ysol Best passenger assignments (modified in-place)
+ * @param max_wait Maximum bus idle time
+ * @param c1/c2/c3 Objective function weights
+ * @param endtime Planning horizon end
+ * @param b_trips Number of trips per bus
+ * @param b_bd Bus last departure times
+ * @param b_freqN Frequency tracking
+ * @param pickupstops Assigned pickup stops
+ * @param penalty Infeasibility penalty
+ * @param N_it Maximum iterations
+ * @param timestamp Current time for real-time mode
+ * @param max_runtime Maximum CPU time
+ * @return Final solution cost
+ */
 inline double Improvement(int B, int N, int M, int S, int OG_R, int OG_R1, int OG_R2, int OGxt, int C_OG, int d_dl, int d_de, int d_ae, int d_al, int d_t, double short_route, double *pickup, double *OG_departures, double *OG_arrivals,
                           int *best_route, double **traveltimes, double **traveltimep, int **closestPS, int dw, vector<vector<vector<int>>> &b_xsol, vector<vector<vector<double>>> &b_Dsol, int **&b_ysol, int max_wait,
                           float c1, float c2, float c3, double endtime, int *b_trips, double *b_bd, double *b_freqN, int *pickupstops, double penalty, int N_it, double *timestamp, double max_runtime) {
-    // INFO: ysol, xsol and Dsol are only the trips in the future wrt to timestamp
     cout << "  ++++++++++++++++++++++ BEGIN IMPROVEMENT +++++++++++++++++++++++\n";
     double start_time = clock(), elapsed_time = 0;
     int i, j, b, s, p, l, t, p_it, X1, X2;
@@ -2328,22 +2530,24 @@ inline double Improvement(int B, int N, int M, int S, int OG_R, int OG_R1, int O
 
     double currtime = 0;
     bool fixed = true;
-    vector<int> P1, P2;
+    vector<int> P1, P2;  // Lists of unassigned arrival/departure passengers
     double *tpickup = new double[OG_R];
     int *tpickupstops = new int[OG_R];
     bool isFEAS = true;
 
+    // Initialize pickup tracking and identify unassigned passengers
     for (i = 0; i < OG_R; i++) {
         tpickup[i] = -1;
         tpickupstops[i] = -1;
-        // cout << " ysol0: " << b_ysol[i][0] << endl;
+        
+        // Collect passengers with status -3 (fixed pickup) or -2 (new request)
         if ((b_ysol[i][0] == -3 || b_ysol[i][0] == -2) && i < OG_R1) {
-            P1.push_back(i);
+            P1.push_back(i);  // Arrival-based passenger
         }
         if ((b_ysol[i][0] == -3 || b_ysol[i][0] == -2) && i >= OG_R1) {
-            P2.push_back(i);
+            P2.push_back(i);  // Departure-based passenger
         }
-        // if (b_ysol[i][0] == -2) cout << "passenger " << i << " is new  and pick-up time: " << round(tpickup[i] / 60) << " stop: " << tpickupstops[i] << endl;
+        
         if (b_ysol[i][0] == -3) {
             tpickup[i] = pickup[i];
             tpickupstops[i] = pickupstops[i];
@@ -3058,69 +3262,95 @@ inline double StaticOpt(int B, int N, int M, int S, int OG_R, int OG_R1, int OG_
     return bb_cost;
 }
 
+/*******************************************************************************
+ * MAIN PROGRAM
+ * 
+ * Runs 5 independent instances of the bus routing optimization problem.
+ * Each instance:
+ * 1. Loads passenger and stop data from files
+ * 2. Computes travel time matrices
+ * 3. Preprocesses data (sorts passengers, finds nearest stops)
+ * 4. Optimizes the best route sequence
+ * 5. Generates initial feasible solution using parallel search
+ * 6. Improves solution using Large Neighborhood Search (LNS)
+ * 7. Outputs results to instance file
+ ******************************************************************************/
 int main() {
     int i, j, k, b, t, p, l, s;
+    
+    // Run 5 independent optimization instances
     for (int iruns = 0; iruns < 5; iruns++) {
-        bool inst_gen = 1;
-        int instance = iruns + 1, experiment = 0;
-        bool SOpt = 1;
+        bool inst_gen = 1;  // Use Antwerp dataset (1) or coordinate-based mode (0)
+        int instance = iruns + 1;
+        bool SOpt = 1;      // Enable solution optimization
         string igen = "";
         if (inst_gen) {
-            igen = "Antwerp/";
+            igen = "Antwerp/";  // Subdirectory for Antwerp dataset
         }
-        int N_it = 30000;
+        int N_it = 30000;  // Maximum iterations for improvement phase
+        
+        // Create output file for this instance
         ofstream inst("data/input/Instance_ANT_" + to_string(instance) + ".txt");
-        inst << "---------- Weight factors of the objective function -------- " << endl
-             << endl;
-        // WEIGHT FACTORS--------------------------------------------------------------------------
-        float c1 = 0.33f;
+        inst << "---------- Weight factors of the objective function -------- " << endl << endl;
+        
+        // OBJECTIVE FUNCTION WEIGHTS
+        // Minimize: c1*(bus travel time) + c2*(passenger walking time) + c3*(schedule deviation)
+        float c1 = 0.33f;  // Bus travel time weight
         inst << "c1: " << c1 << " \t (For travel-time of the buses)" << endl;
-        float c2 = 0.33f;
+        float c2 = 0.33f;  // Passenger walking time weight
         inst << "c2: " << c2 << " \t (For walking time of the passengers)" << endl;
-        float c3 = 1 - c1 - c2;
+        float c3 = 1 - c1 - c2;  // Schedule adherence weight
         inst << "c3: " << c3 << " \t (For the absolute difference in desired arrival time and actual arrival time of the passengers)" << endl;
         inst << endl;
-        inst << "---------------------- Parameters -------------------------- " << endl
-             << endl;
-        // Define parameters-----------------------------------------------------------------------
-        // const double beforehand = 0.3; // percentage of passengers that requestred a service before the start of operation
-        const int B = 18; // number of buses available
+        inst << "---------------------- Parameters -------------------------- " << endl << endl;
+        
+        // SYSTEM PARAMETERS
+        const int B = 18;  // Number of buses in fleet
         inst << "Number of buses: " << B << endl;
-        const int N = 8; // number of mandatory stations
+        const int N = 8;   // Number of mandatory stops (must visit in order)
         inst << "Number of mandatory bus stops: " << N << endl;
-        const int M = 8; // number of stations in cluster
+        const int M = 8;   // Number of optional stops per cluster (between mandatory stops)
         inst << "Number optional bus stops per cluster: " << M << " \n --> One cluster between each mandatory stop: " + to_string((N - 1) * M) + " optional stops in total" << endl;
-        const int S = (N - 1) * M + N; // amount of Stations
+        const int S = (N - 1) * M + N;  // Total number of stops
         inst << "Total number of bus stops: " << S << endl;
-        const int OG_R = 100; // number of passenger requests
-        const int OG_R1 = int(OG_R / 2), OG_R2 = OG_R - OG_R1;
-        const int R = 3; // number of passengers that requestred a service before the start of operation
-        const int R1 = R / 2, R2 = R1;
-        // const int R = OG_R; // number of passenger requests
-        // int R1 = int(R / 2), R2 = R - R1;
-        // const int SO = int(beforehand * R); //number of passengers that requestred a service before the start of operation
+        
+        // PASSENGER REQUEST CONFIGURATION
+        const int OG_R = 100;  // Total number of passenger requests in dataset
+        const int OG_R1 = int(OG_R / 2), OG_R2 = OG_R - OG_R1;  // Split into two groups
+        const int R = 3;       // Number of passengers to serve in this run (reduced for testing)
+        const int R1 = R / 2, R2 = R1;  // Split active requests into two groups
         inst << "Number of passenger requests: " << OG_R << endl;
-        // double pm1 = 0, pm2 = 0, pm3 = 1, fpm = 0;
-        bool isFEAS = true;
-
-        int C_OG = 20;
-        int C = C_OG; // Bus capcity
+        
+        bool isFEAS = true;  // Track feasibility status
+        
+        // BUS CAPACITY AND TIMING CONSTRAINTS
+        int C_OG = 20;  // Original bus capacity
+        int C = C_OG;   // Current bus capacity (passengers)
         inst << "Bus capacity: " << C_OG << " passengers" << endl;
-        const int TS = 3600 * 4.2;
+        
+        const int TS = 3600 * 4.2;  // Planning horizon (4.2 hours in seconds)
         inst << "Planning horizon: " << TS << "s" << endl;
-        int OGxt = 60 * 20;
+        
+        int OGxt = 60 * 20;  // Minimum headway between bus departures (20 minutes)
         inst << "Minimum time between two buses departing from a mandatory stop: " << OGxt << "s" << endl;
-        const float pspeed = 1.0f;         // passengers speed in meter per scond
-        const float bspeed = 40.0f / 3.6f; // bus speed in m/s
-        const int dw = 20 * 60;            // threshold of individual walking time in sec
+        
+        // SPEED PARAMETERS
+        const float pspeed = 1.0f;         // Passenger walking speed (m/s)
+        const float bspeed = 40.0f / 3.6f; // Bus travel speed (40 km/h converted to m/s)
+        
+        // TIME WINDOW CONSTRAINTS
+        const int dw = 20 * 60;      // Maximum walking time threshold (20 minutes)
         inst << "Maximum walking time for any passenger: " << dw << " seconds" << endl;
-        const int d_dl = 10 * 60;
-        const int d_de = 10 * 60;
-        const int d_ae = 15 * 60;
-        const int d_al = 10 * 60;
-        const int d_t = 10 * 60;
-        const int max_wait = 5 * 60;         // max amount of time a bus can wait
-        const int max_request_wait = 5 * 60; // max amount of time for passengers to recieve an answer after request
+        
+        const int d_dl = 10 * 60;    // Max late departure from desired time (10 min)
+        const int d_de = 10 * 60;    // Max early departure from desired time (10 min)
+        const int d_ae = 15 * 60;    // Max early arrival vs desired time (15 min)
+        const int d_al = 10 * 60;    // Max late arrival vs desired time (10 min)
+        const int d_t = 10 * 60;     // Max deviation from promised pick-up time (10 min)
+        
+        const int max_wait = 5 * 60;         // Max bus idle time to wait for passengers (5 min)
+        const int max_request_wait = 5 * 60; // Max response time after request (5 min)
+        
         inst << "Maximum amount of time a passenger can arrive too early w.r.t. their desired arrival time: " << d_ae << " seconds" << endl;
         inst << "Maximum amount of time a passenger can arrive too late w.r.t. their desired arrival time: " << d_al << " seconds" << endl;
         inst << "Maximum amount of time a passenger can depart too early w.r.t. their desired departure time: " << d_de << " seconds" << endl;
@@ -3128,61 +3358,72 @@ int main() {
         inst << "Maximum amount of time a passenger can depart too late or too early w.r.t. their promised pick-up time: " << d_t << " seconds" << endl;
         inst << "Maximum amount of time a bus can be idle to accomodate a request: " << max_wait << " seconds" << endl;
         inst << "Maximum amount of time a passenger has to wait to receive a response after sending a request for transportation: " << max_request_wait << " seconds" << endl;
-        // const int M0 = 10000; // Big M
 
-        // Read in locations
+        /***************************************************************************
+         * DATA LOADING: PASSENGER AND STOP LOCATIONS
+         ***************************************************************************/
+        
+        // Load passenger origin/destination locations from file
         double **passengers = new double *[OG_R];
         for (i = 0; i < OG_R; i++) {
             passengers[i] = new double[2];
         }
-        ifstream filep("data/input/" + igen + "passengers" + to_string(OG_R) + ".txt");
+        ifstream filep(dataPath("data/input/" + igen + "passengers" + to_string(OG_R) + ".txt"));
         int i0 = 0;
         while (i0 < OG_R) {
-            filep >> passengers[i0][0] >> passengers[i0][1]; // extracts 2 floating point values seperated by whitespace
+            filep >> passengers[i0][0] >> passengers[i0][1]; // Read x, y coordinates
             i0++;
         }
 
-        double **mandatory = new double *[N]; // mandatory Stations
+        // Load mandatory stop locations (must visit in fixed order)
+        double **mandatory = new double *[N];
         for (i = 0; i < N; i++) {
             mandatory[i] = new double[2];
         }
-        ifstream filem("data/input/" + igen + "mandatory.txt");
+        ifstream filem(dataPath("data/input/" + igen + "mandatory.txt"));
         i0 = 0;
         while (i0 < N) {
-            filem >> mandatory[i0][0] >> mandatory[i0][1]; // extracts 2 floating point values seperated by whitespace
+            filem >> mandatory[i0][0] >> mandatory[i0][1]; // Read x, y coordinates
             i0++;
         }
 
-        double **optional = new double *[(N - 1) * M]; // optinal stations
+        // Load optional stop locations (can be skipped or reordered between mandatory stops)
+        double **optional = new double *[(N - 1) * M];
         for (i = 0; i < (N - 1) * M; i++) {
             optional[i] = new double[2];
         }
-        ifstream fileo("data/input/" + igen + "optional" + to_string(M) + ".txt");
+        ifstream fileo(dataPath("data/input/" + igen + "optional" + to_string(M) + ".txt"));
         i0 = 0;
         while (i0 < (N - 1) * M) {
-            fileo >> optional[i0][0] >> optional[i0][1]; // extracts 2 floating point values seperated by whitespace
+            fileo >> optional[i0][0] >> optional[i0][1]; // Read x, y coordinates
             i0++;
         }
+        
         default_random_engine generator0;
-        double timestamps[OG_R];
-        ifstream filetp("data/input/" + igen + "timestamps" + to_string(OG_R) + ".txt");
+        double timestamps[OG_R];  // Request timestamps for each passenger
+        ifstream filetp(dataPath("data/input/" + igen + "timestamps" + to_string(OG_R) + ".txt"));
 
-        // Arrival times of the passengers
+        /***************************************************************************
+         * LOAD PASSENGER TIME PREFERENCES
+         ***************************************************************************/
+        
+        // Desired arrival times (passengers who specify when they want to arrive)
         double OG_arrivals[OG_R1];
         double arrivals[R1];
-        ifstream filea("data/input/" + igen + "arrivals" + to_string(OG_R) + ".txt");
+        ifstream filea(dataPath("data/input/" + igen + "arrivals" + to_string(OG_R) + ".txt"));
         inst << endl
              << "Desired arrival times (DAT) of the passengers and time-stamp of request (TSR) in seconds: " << endl;
         i0 = 0;
-        // cout << "SO2: " << SO2 << endl;
-        double minTS = INT16_MAX;
+        double minTS = INT16_MAX;  // Track earliest request timestamp
+        
+        // Read arrival-based passengers (first R1 active, rest stored for future)
         while (i0 < R1) {
             filetp >> timestamps[i0];
             if (minTS > timestamps[i0]) {
                 minTS = timestamps[i0];
             }
             if (R != 3) {
-                timestamps[i0] = -1;
+                timestamps[i0] = -1;  // Mark as pre-existing request
             }
             filea >> OG_arrivals[i0];
             arrivals[i0] = OG_arrivals[i0];
@@ -3194,7 +3435,8 @@ int main() {
             }
             i0++;
         }
-        // cout << i0 << endl;
+        
+        // Read remaining arrival-based passengers (not active in this run)
         while (i0 < OG_R1) {
             filetp >> timestamps[i0];
             if (minTS > timestamps[i0]) {
@@ -3204,17 +3446,20 @@ int main() {
             inst << "p_" << i0 + 1 << ":\tDAT=" << OG_arrivals[i0] << "\tTSR=" << int(timestamps[i0]) << endl;
             i0++;
         }
-        // Departure times of the passengers
+        
+        // Desired departure times (passengers who specify when they want to leave)
         double departures[R2];
         double OG_departures[OG_R2];
-        ifstream filed("data/input/" + igen + "departures" + to_string(OG_R) + ".txt");
+        ifstream filed(dataPath("data/input/" + igen + "departures" + to_string(OG_R) + ".txt"));
         inst << endl
              << "Desired departure times (DDT) of the passengers and time-stamp of request (TSR) in seconds: " << endl;
         i0 = 0;
+        
+        // Read departure-based passengers (first R2 active)
         while (i0 < R2) {
             filetp >> timestamps[i0 + OG_R1];
             if (R != 3) {
-                timestamps[i0 + OG_R1] = -1;
+                timestamps[i0 + OG_R1] = -1;  // Mark as pre-existing request
             }
             filed >> OG_departures[i0];
             departures[i0] = OG_departures[i0];
@@ -3226,6 +3471,8 @@ int main() {
             }
             i0++;
         }
+        
+        // Read remaining departure-based passengers
         while (i0 < OG_R2) {
             filetp >> timestamps[i0 + OG_R1];
             filed >> OG_departures[i0];
@@ -3233,23 +3480,33 @@ int main() {
             i0++;
         }
 
-        // calculate travel time using manhattan distance
-        double **traveltimep = new double *[OG_R]; // travel times of people between passangers and stations
+        /***************************************************************************
+         * COMPUTE TRAVEL TIME MATRICES
+         * - traveltimep[i][j]: Walking time from passenger i to stop j
+         * - traveltimes[i][j]: Bus travel time from stop i to stop j
+         ***************************************************************************/
+        
+        // Initialize passenger-to-stop walking time matrix
+        double **traveltimep = new double *[OG_R];
         for (i = 0; i < OG_R; i++) {
             traveltimep[i] = new double[S];
             for (j = 0; j < S; j++) {
-                traveltimep[i][j] = INT32_MAX;
+                traveltimep[i][j] = INT32_MAX;  // Unreachable by default
             }
         }
+        
+        // Initialize stop-to-stop bus travel time matrix
         double **traveltimes = new double *[S];
         for (i = 0; i < S; i++) {
             traveltimes[i] = new double[S];
             for (j = 0; j < S; j++) {
-                traveltimes[i][j] = INT32_MAX;
+                traveltimes[i][j] = INT32_MAX;  // No direct connection by default
             }
-        } // travel times of buses between stations
+        }
 
+        // Compute walking times: coordinate-based (Manhattan) or from CSV
         if (!inst_gen) {
+            // Coordinate-based mode: Use Manhattan distance and walking speed
             for (i = 0; i < OG_R; i++) {
                 for (j = 0; j < N; j++) {
                     traveltimep[i][j] = (abs(passengers[i][0] - mandatory[j][0]) + abs(passengers[i][1] - mandatory[j][1])) * 1000 / pspeed;
@@ -3261,9 +3518,11 @@ int main() {
             }
         }
         else {
+            // Antwerp dataset mode: Load pre-computed walking times from CSV
             read_walking_matrix("data/input/Antwerp/walking_data.csv", traveltimep, OG_R, S);
         }
 
+        // Output walking time matrix to instance file
         inst << endl
              << "Walking time between passengers and bus stops in seconds: " 
 			 << "\npassengers correspond with the rows, bus stops correspond with the columns \nthe mandatory stops are listed first, then the optional stops are listed" << endl;
@@ -3276,16 +3535,15 @@ int main() {
                     inst << int(traveltimep[i][j]) << "\t";
                 }
                 else {
-                    inst << "x\t";
+                    inst << "x\t";  // Mark unreachable stops
                 }
-                // walk_p << int(traveltimep[i][j]) << "\t";
             }
             inst << endl;
-            // walk_p << endl;
         }
-        // walk_p.close();
-        // exit(0);
+        
+        // Compute bus travel times between stops
         if (!inst_gen) {
+            // Coordinate-based mode: Use Manhattan distance and bus speed
             for (i = 0; i < N; i++) {
                 for (j = 0; j < N; j++) {
                     traveltimes[i][j] = (abs(mandatory[i][0] - mandatory[j][0]) + abs(mandatory[i][1] - mandatory[j][1])) * 1000 / bspeed;
@@ -3305,11 +3563,13 @@ int main() {
             }
         }
         else {
+            // Antwerp dataset mode: Load pre-computed bus travel times from CSV
             cout << "check\n";
             read_travel_matrix("data/input/Antwerp/travel_time.csv", traveltimes, S);
             cout << "check\n";
         }
 
+        // Output bus travel time matrix to instance file
         inst << endl
              << "Travel time between bus stops in seconds: " << endl;
         for (i = 0; i < S; i++) {
@@ -3320,114 +3580,128 @@ int main() {
         }
         inst.close();
 
-        // exit(0);
-
-        //************************************************* PRE PROCESSING ********************************************************
+        /***************************************************************************
+         * PREPROCESSING: SORT STOPS BY PROXIMITY
+         * Build nearest neighbor lists for efficient stop selection
+         ***************************************************************************/
 
         double *tempdist = new double[S];
         int *index = new int[S];
+        
+        // closestS[i][k] = index of k-th nearest stop to stop i
         int **closestS = new int *[S];
         for (i = 0; i < S; i++) {
             closestS[i] = new int[S];
         }
-        // std::cout << "Stops: \n";
+        
+        // For each stop, sort all other stops by travel time
         for (i = 0; i < S; i++) {
-            // initialize and copy distance of cities to temp array
+            // Copy travel times to temporary array
             for (j = 0; j < S; j++) {
                 if (j != i) {
                     tempdist[j] = traveltimes[i][j];
                 }
                 else {
-                    tempdist[j] = 100000;
+                    tempdist[j] = 100000;  // Exclude self
                 }
                 index[j] = j;
             }
 
-            // sort according to dist
+            // Sort stops by distance using QuickSort
             quickSort(index, tempdist, 0, S - 1);
 
-            // keep track of best neighbors
+            // Store sorted neighbor indices
             for (l = 0; l < S; l++) {
-                closestS[i][l] = index[l]; // index
-                // std::cout << index[l] << " ";
+                closestS[i][l] = index[l];
             }
-            // std::cout << " \n";
         }
 
+        // closestPS[i][k] = index of k-th nearest stop to passenger i
         int **closestPS = new int *[OG_R];
         for (i = 0; i < OG_R; i++) {
             closestPS[i] = new int[S];
         }
-        // std::cout << "Passengers: \n";
+        
+        // For each passenger, sort all stops by walking time
         for (p = 0; p < OG_R; p++) {
-            // initialize and copy distance of cities to temp array
+            // Copy walking times to temporary array
             for (j = 0; j < S; j++) {
                 tempdist[j] = traveltimep[p][j];
                 index[j] = j;
             }
-            // sort according to dist
+            
+            // Sort stops by walking distance using QuickSort
             quickSort(index, tempdist, 0, S - 1);
 
-            // keep track of best neighbors
+            // Store sorted stop indices for this passenger
             for (j = 0; j < S; j++) {
                 closestPS[p][j] = index[j];
-                // std::cout << index[j] << " ";
             }
         }
 
-        // remove memory
+        // Clean up temporary arrays
         delete[] index;
         delete[] tempdist;
 
-        // generator0.seed(400005550007);
-        // uniform_int_distribution<int> rRequests(0, R - 1);
-        // uniform_int_distribution<int> rStations(0, S - 1);
-        /// uniform_int_distribution<int> oneto100(1, 100);
+        /***************************************************************************
+         * ROUTE OPTIMIZATION: FIND BEST OPTIONAL STOP SEQUENCE
+         * Optimize the order of optional stops between mandatory stops
+         ***************************************************************************/
+        
         uniform_int_distribution<int> NEXT(0, M);
-        // ---------------- Shortest route
+        
+        // Calculate shortest possible route (mandatory stops only)
         double short_route = 0;
         for (i = 0; i < N - 1; i++) {
             short_route += traveltimes[i][i + 1];
         }
-        //------- Determine best route
+        
+        // Initialize route with all stops in cluster order
         int best_route[S];
-        //*
-
-        best_route[0] = 0;
+        best_route[0] = 0;  // Start at first mandatory stop
         std::cout << best_route[0] << " ";
 
-        int ma = 0;
-        int oc = 0;
-        int nopt = 100;
+        int ma = 0;   // Mandatory stop index
+        int oc = 0;   // Optional stop counter within cluster
+        int nopt = 100;  // Number of optimization iterations per cluster
+        
+        // Build initial route: mandatory[0], optional cluster 0, mandatory[1], optional cluster 1, ...
         for (i = 1; i < S; i++) {
             if (oc < M) {
+                // Add optional stop from current cluster
                 best_route[i] = N + ma * M + oc;
                 oc++;
             }
             else {
+                // Move to next mandatory stop
                 oc = 0;
                 ma++;
                 best_route[i] = ma;
             }
-            // std::cout << best_route[i] << " ";
         }
-        // std::cout << endl;
 
+        // Optimize route order within each cluster using 2-opt local search
         int start, end, nextindex, cc, mid, temp0;
         double currentcost, ncost, totE = 0, dE0;
+        
         for (i = 0; i < N - 1; i++) {
-            std::uniform_int_distribution<int> NEXT(i * (M + 1), (M + 1) * i + M + 1); // look only in a cluster (mandatory stops included)
-            for (t = 0; t < nopt; t++) {                                               // number of opt operations
+            // Define cluster bounds: from mandatory stop i to mandatory stop i+1
+            std::uniform_int_distribution<int> NEXT(i * (M + 1), (M + 1) * i + M + 1);
+            
+            for (t = 0; t < nopt; t++) {  // Perform nopt optimization attempts
+                // Select two random positions in the cluster
                 j = NEXT(generator0);
-                while (j == (M + 1) * i + M + 1) {
+                while (j == (M + 1) * i + M + 1) {  // Avoid selecting end boundary
                     j = NEXT(generator0);
                 }
                 l = NEXT(generator0);
-                // two nodes cannot be the same of both be the mandatory stops at once
+                
+                // Ensure two different positions, neither at cluster end
                 while (l == j || l == (M + 1) * i + M + 1) {
                     l = NEXT(generator0);
                 }
 
+                // Order the positions
                 if (j > l) {
                     start = l;
                     end = j;
@@ -3436,17 +3710,21 @@ int main() {
                     start = j;
                     end = l;
                 }
+                
+                // Calculate cost change for 2-opt swap
                 nextindex = end + 1;
                 currentcost = traveltimes[best_route[start]][best_route[start + 1]] + traveltimes[best_route[end]][best_route[nextindex]];
                 ncost = traveltimes[best_route[start]][best_route[end]] + traveltimes[best_route[start + 1]][best_route[nextindex]];
-                // std::cout << " Current cost: " << currentcost << " New Cost: " << newcost << " \n";
-                //--------------------------------------------------------------------SA --------------------------------------------------------------------------
+                
+                // Energy change (negative = improvement)
                 dE0 = (ncost - currentcost);
+                
+                // Accept improvement moves only
                 if (dE0 < 0) {
-                    // currentcost = ncost;
                     totE -= -dE0;
                     mid = (end - start) / 2;
-                    // 2opt
+                    
+                    // Perform 2-opt: reverse segment between start and end
                     for (cc = 1; cc <= mid; cc++) {
                         temp0 = best_route[start + cc];
                         best_route[start + cc] = best_route[end + 1 - cc];
@@ -3456,6 +3734,7 @@ int main() {
             }
         }
 
+        // Output optimized route and costs
         currentcost = 0;
         for (i = 0; i < S; i++) {
             std::cout << best_route[i] << " ";
@@ -3466,6 +3745,7 @@ int main() {
         cout << "\nTime big route: " << round(currentcost / 60 * 100) / 100 << " min" << endl;
         cout << "Time short route: " << round(short_route / 60 * 100) / 100 << " min" << endl;
 
+        // Display passenger information and nearest stops
         for (p = 0; p < OG_R; p++) {
             if (p < OG_R1) {
                 cout << "p_" << p << "\tDAT=" << round(OG_arrivals[p] / 60) << "\tclosest stop: " << closestPS[p][0] << endl;
@@ -3474,18 +3754,21 @@ int main() {
                 cout << "p_" << p << "\tDDT=" << round(OG_departures[p - OG_R1] / 60) << "\tclosest stop: " << closestPS[p][0] << endl;
             }
         }
-        //----------------------------------------------------------------------------- INITIALIZE ----------------------------------------------------------------------------------------------------
+        
+        /***************************************************************************
+         * SOLUTION INITIALIZATION
+         * Set up data structures for bus routes, schedules, and passenger assignments
+         ***************************************************************************/
 
-        // list of lists: each element in higher list corresponds with a passenger, each passenger gets a list of length three
-        // this list assigns passenger as follows: p_i= [bus, trip, bus stop]
-        // int** ysol = new int* [R];
+        // Passenger assignment: ysol[i] = [bus, trip, stop] for passenger i
+        // b_ysol = best solution found, ysol = current working solution
         int **b_ysol = new int *[OG_R];
         int **ysol = new int *[OG_R];
         for (i = 0; i < OG_R; i++) {
-            // ysol[i] = new int[3];
             b_ysol[i] = new int[3];
             ysol[i] = new int[3];
 
+            // Initialize as unassigned (-1)
             b_ysol[i][0] = -1;
             b_ysol[i][1] = -1;
             b_ysol[i][2] = -1;
@@ -3494,96 +3777,125 @@ int main() {
             ysol[i][1] = -1;
             ysol[i][2] = -1;
         }
-        // routing: [bus, trip, bus stops]
-        // vector<vector<vector<int>>> xsol(B);
-        vector<vector<vector<int>>> b_xsol(B);
-        vector<vector<vector<int>>> xsol(B);
+        
+        // Bus routing: xsol[bus][trip] = vector of stop indices visited
+        vector<vector<vector<int>>> b_xsol(B);  // Best solution routes
+        vector<vector<vector<int>>> xsol(B);    // Current solution routes
 
-        // D: [bus, trip, departure time]
-        // vector<vector<vector<double>>> Dsol(B);
-        vector<vector<vector<double>>> b_Dsol(B);
-        vector<vector<vector<double>>> Dsol(B);
-        double currtime = minTS;
-        double endtime = minTS + TS;
+        // Departure times: Dsol[bus][trip] = vector of departure times at each stop
+        vector<vector<vector<double>>> b_Dsol(B);  // Best solution times
+        vector<vector<vector<double>>> Dsol(B);    // Current solution times
+        
+        // Time window for optimization
+        double currtime = minTS;       // Current simulation time
+        double endtime = minTS + TS;   // End of planning horizon
         double tt;
         int X1, X2;
 
-        double bd[B];
-        int trips[B];
+        // Bus tracking arrays
+        double bd[B];    // Last departure time for each bus from mandatory stop
+        int trips[B];    // Number of trips completed by each bus
         for (b = 0; b < B; b++) {
-            bd[b] = minTS - 50 * 60;
+            bd[b] = minTS - 50 * 60;  // Initialize 50 minutes before first request
             trips[b] = 0;
         }
+        
+        // Frequency tracking for mandatory stops (last bus departure time)
         double freqN[N];
         for (b = 0; b < N; b++) {
-            freqN[b] = -1;
+            freqN[b] = -1;  // No bus has visited yet
         }
-        vector<int> route;
-        vector<double> timetable;
-        if (R == 3) {
+        
+        vector<int> route;           // Temporary route for current trip
+        vector<double> timetable;    // Temporary timetable for current trip
+        
+        /***************************************************************************
+         * INITIAL SOLUTION GENERATION (REAL-TIME MODE)
+         * Process passenger requests as they arrive and assign to buses
+         ***************************************************************************/
+        
+        if (R == 3) {  // Real-time mode with limited passengers
             while (currtime < endtime) {
 
-                // determine next bus
+                // Determine which bus should depart next (earliest last departure)
                 b = iMin(bd, B);
-                // cout << "\n   +++++++++++++ BUS " << b << " on trip " << trips[b] << " bd: " << round(bd[b] / 60) << endl;
 
-                // initialize timetable and route
+                // Initialize route with mandatory stops only
                 route.clear();
                 timetable.clear();
+                
+                // First stop: ensure minimum headway from previous bus at stop 0
                 timetable.push_back(max(freqN[0] + max(OGxt / 2, 10 * 60), bd[b]));
                 route.push_back(0);
-                tt = -1;
+                
+                // Add remaining mandatory stops with travel times
+                tt = -1;  // Track maximum headway violation
                 for (i = 1; i < N; i++) {
                     route.push_back(i);
                     timetable.push_back(timetable[i - 1] + traveltimes[i - 1][i]);
+                    
+                    // Check if headway constraint is violated at this stop
                     if (freqN[i] != -1 && timetable[i] - freqN[i] > tt) {
                         tt = timetable[i] - freqN[i];
                     }
                 }
 
+                // If headway exceeds maximum, shift entire schedule earlier
                 if (tt > OGxt) {
                     for (i = 0; i < N; i++) {
                         timetable[i] -= (tt - OGxt);
                     }
                 }
 
+                // Verify bus can still depart after its last trip
                 if (timetable[0] < bd[b]) {
                     cout << " INFEASIBLE for xt\n";
                     break;
                 }
+                
+                // Store this trip in the solution
                 b_xsol[b].push_back(route);
                 b_Dsol[b].push_back(timetable);
-                // intialize capacities
 
-                // update freqN
+                // Update frequency tracking for mandatory stops
                 X1 = b_xsol[b][trips[b]].size();
                 for (i = 0; i < X1; i++) {
-                    if (b_xsol[b][trips[b]][i] < N && (freqN[b_xsol[b][trips[b]][i]] < b_Dsol[b][trips[b]][i] || freqN[b_xsol[b][trips[b]][i]] - b_Dsol[b][trips[b]][i] > OGxt)) {
+                    if (b_xsol[b][trips[b]][i] < N && 
+                        (freqN[b_xsol[b][trips[b]][i]] < b_Dsol[b][trips[b]][i] || 
+                         freqN[b_xsol[b][trips[b]][i]] - b_Dsol[b][trips[b]][i] > OGxt)) {
                         freqN[b_xsol[b][trips[b]][i]] = b_Dsol[b][trips[b]][i];
-                        // t++;
                     }
                 }
 
+                // Advance current time and update bus availability
                 currtime = b_Dsol[b][trips[b]].back();
                 bd[b] = currtime + short_route;
                 trips[b]++;
             }
 
+            // Initialize passenger assignments as unassigned
             for (p = 0; p < OG_R; p++) {
                 b_ysol[p][0] = -1;
                 b_ysol[p][1] = -1;
                 b_ysol[p][2] = -1;
             }
         }
-        //------------------------------------------------------------- Make INITIAL planning with requests that are already recieved ------------------------------------------------------------------
+        
+        /***************************************************************************
+         * INITIAL SOLUTION GENERATION (BATCH MODE)
+         * Process all pre-existing passenger requests together
+         ***************************************************************************/
         else {
-            if (SOpt) {
-                double **ttraveltimep = new double *[R]; // travel times of people between passangers and stations
+            if (SOpt) {  // Solution optimization enabled
+                // Create travel time matrix for active passengers only
+                double **ttraveltimep = new double *[R];
                 for (i = 0; i < R; i++) {
                     ttraveltimep[i] = new double[S];
                 }
+                
+                // Populate travel times (walking) for each active passenger
                 for (i = 0; i < R; i++) {
-                    if (i < R1) {
+                    if (i < R1) {  // Arrival-based passenger
                         for (j = 0; j < N; j++) {
                             ttraveltimep[i][j] = (abs(passengers[i][0] - mandatory[j][0]) + abs(passengers[i][1] - mandatory[j][1])) * 1000 / pspeed;
                         }
@@ -3592,7 +3904,7 @@ int main() {
                             ttraveltimep[i][j] = (abs(passengers[i][0] - optional[j - N][0]) + abs(passengers[i][1] - optional[j - N][1])) * 1000 / pspeed;
                         }
                     }
-                    else {
+                    else {  // Departure-based passenger
                         for (j = 0; j < N; j++) {
                             ttraveltimep[i][j] = (abs(passengers[i + OG_R1 - R1][0] - mandatory[j][0]) + abs(passengers[i + OG_R1 - R1][1] - mandatory[j][1])) * 1000 / pspeed;
                         }
@@ -3602,43 +3914,52 @@ int main() {
                         }
                     }
                 }
+                
+                // Sort stops by walking time for each active passenger
                 double *ttempdist = new double[S];
                 int *tindex = new int[S];
                 int **tclosestPS = new int *[R];
                 for (i = 0; i < R; i++) {
                     tclosestPS[i] = new int[S];
                 }
-                // std::cout << "Passengers: \n";
+                
                 for (p = 0; p < R; p++) {
-                    // initialize and copy distance of cities to temp array
+                    // Copy walking times to temporary array
                     for (j = 0; j < S; j++) {
                         ttempdist[j] = ttraveltimep[p][j];
                         tindex[j] = j;
                     }
-                    // sort according to dist
+                    
+                    // Sort by walking distance
                     quickSort(tindex, ttempdist, 0, S - 1);
 
-                    // keep track of best neighbors
+                    // Store sorted stop indices
                     for (j = 0; j < S; j++) {
                         tclosestPS[p][j] = tindex[j];
-                        // std::cout << index[j] << " ";
                     }
                 }
 
-                // remove memory
+                // Clean up temporary arrays
                 delete[] tindex;
                 delete[] ttempdist;
 
+                /*******************************************************************
+                 * PARALLEL SEARCH INITIALIZATION
+                 * Set up for multi-threaded solution exploration
+                 *******************************************************************/
+                
                 uniform_real_distribution<float> r01(0, 1);
                 double u_cost = INT32_MAX, u_RT;
 
-                vector<float> lPM1;
-                vector<float> lPM2;
-                vector<float> lPM3;
-                vector<float> lFPM;
-                vector<float> lXT;
-                vector<float> lC;
+                // Tracking vectors for different solution metrics (per thread)
+                vector<float> lPM1;   // Percentage of passengers served
+                vector<float> lPM2;   // Average time window satisfaction
+                vector<float> lPM3;   // Constraint satisfaction
+                vector<float> lFPM;   // Feasibility metric
+                vector<float> lXT;    // Headway utilization
+                vector<float> lC;     // Capacity utilization
 
+                // Best solution metrics
                 vector<float> b_lPM1;
                 vector<float> b_lPM2;
                 vector<float> b_lPM3;
@@ -3646,6 +3967,7 @@ int main() {
                 vector<float> b_lXT;
                 vector<float> b_lC;
 
+                // Per-bus metrics tracking
                 vector<vector<float>> lPM1b;
                 vector<vector<float>> lPM2b;
                 vector<vector<float>> lPM3b;
@@ -3653,120 +3975,133 @@ int main() {
                 vector<vector<float>> lXTb;
                 vector<vector<float>> lCb;
 
-                vector<double> Costb;
-                double best_cost = INT32_MAX;
+                vector<double> Costb;          // Cost per bus
+                double best_cost = INT32_MAX;  // Best solution cost found
                 double tstart_time = clock();
-                // +++++++++++++++++++++++++   LNS params +++++++++++++++++++++++++++++
-                double Ts = 1000, T_end = 0.001;
-                // double alph = 0.985;
-                const double nhp = 0.125;
-                // int LL = 30;
-                const int des = 15;
-                // double Tmax = Ts;
-                const double lam = 10;
-                int r_i = 0, stop_it = 150000;
-                double bb_cost = INT32_MAX;
+                
+                /*******************************************************************
+                 * LARGE NEIGHBORHOOD SEARCH (LNS) PARAMETERS
+                 *******************************************************************/
+                
+                double Ts = 1000, T_end = 0.001;  // Simulated annealing temperature range
+                const double nhp = 0.125;         // Neighborhood size parameter
+                const int des = 15;               // Descent iterations before temperature drop
+                const double lam = 10;            // Acceptance probability parameter
+                int r_i = 0, stop_it = 150000;    // Iteration tracking and stopping criterion
+                double bb_cost = INT32_MAX;       // Global best cost
+                
+                // Random number generators for parallel threads
                 random_device r;
                 std::vector<std::default_random_engine> generators;
-                normal_distribution<float> PM(0.6, 0.25);
-                uniform_real_distribution<float> gXT(0.6, 1);
-                uniform_real_distribution<float> gC(0.25, 1);
+                
+                // Probability distributions for parameter selection
+                normal_distribution<float> PM(0.6, 0.25);      // Passenger match probability
+                uniform_real_distribution<float> gXT(0.6, 1);  // Headway parameter
+                uniform_real_distribution<float> gC(0.25, 1);  // Capacity parameter
                 uniform_real_distribution<float> PlanB1(0.95, 1);
                 uniform_real_distribution<float> PlanB2(0, 0.05);
                 uniform_real_distribution<float> PlanB3(0.35, 0.45);
-                // int nN;
+                
+                // Initialize one random generator per thread
                 for (int i = 0, nN = omp_get_max_threads(); i < nN; ++i) {
                     generators.emplace_back(default_random_engine(r()));
                 }
-                std::atomic<bool> INFEASS0(false);
-                // omp_set_num_threads(12);
-                // int give = 0;
-                // cout << omp_get_max_threads() << endl;
+                std::atomic<bool> INFEASS0(false);  // Track infeasibility across threads
+                
+                /*******************************************************************
+                 * PARALLEL SOLUTION SEARCH
+                 * Each thread explores different parameter combinations
+                 *******************************************************************/
 #pragma omp parallel firstprivate(traveltimes, ttraveltimep, arrivals, departures, tclosestPS, closestS, S, M, N, B, short_route, best_route, C, TS, OGxt, dw, d_dl, d_de, d_ae, d_al, c1, c2, c3)
                 {
-                    // double countInfeas1 = 0, countInfeas2 = 0, countFeas = 0;
+                    // Thread-local random generator
                     default_random_engine &generator = generators[omp_get_thread_num()];
-                    // generator.seed((omp_get_thread_num()) * 800051150);
-                    // int iii, stop;
-                    int xt;
-                    double UBxt;
-                    // int LL = 30;
+                    
+                    // Thread-local variables
+                    int xt;        // Current headway parameter
+                    double UBxt;   // Upper bound on headway
 
                     int i, j, b, t, p, l, s;
+                    
+                    // Parameters for passenger insertion algorithm
                     double pm1 = 1, pm2 = 1, pm3 = 1, fpm = 1;
                     double b_next;
                     vector<int> route;
+                    
+                    // Tracking parameter changes
                     vector<float> dPM10;
                     vector<float> dPM20;
                     vector<float> dPM30;
                     vector<float> dFPM0;
                     vector<float> dXT0;
                     vector<float> dC0;
+                    
                     int temp;
-                    vector<double> IFC;
+                    vector<double> IFC;  // Infeasibility counter
                     int FCi = 0;
-                    // double dE;
+                    
                     vector<double> timetable;
                     vector<double> tempt;
                     double timewindow, timewindow2;
-                    // double Arr;
 
-                    int trips[B]; // keeps track of which trip each bus is at needs to be updated
+                    int trips[B];      // Track trip count per bus
                     int best_stop;
-                    double freqN[N];
+                    double freqN[N];    // Last departure time at each mandatory stop
                     double newfreqN[N];
 
-                    double bd[B];
-                    int yk[R][3];
-                    double startopt;
+                    double bd[B];      // Last bus departure times
+                    int yk[R][3];      // Passenger assignments [bus, trip, stop]
+                    double startopt;   // Optimization start time
 
                     int countp, p1, p2, cp1, cp2;
                     bool in, in2;
                     double threshold, tt;
 
-                    double cost, b_cost;
-                    double l_arr, l_dep;
+                    double cost, b_cost;       // Current and best costs
+                    double l_arr, l_dep;       // Latest arrival/departure
 
-                    int b_it = 0;
+                    int b_it = 0;  // Best iteration counter
 
+                    // Track minimum constraint violations
                     double minF = INT16_MAX, min_al = INT16_MAX, min_ae = INT16_MAX, min_dl = INT16_MAX, min_de = INT16_MAX;
                     int nS, dst;
                     double diffa1, diffa2, diffd1, diffd2, diffF;
-                    double difBD, maxFW, maxRW; // max time to arrive or depart earlier
-                    // add addtional passenger with DAT
-                    //*
+                    double difBD, maxFW, maxRW;  // Time window bounds
+                    
                     double extra = 0, b_extra = 0;
                     int indexpt[R1];
                     int indexpt2[R2];
                     double temparrivals[R1];
                     double tempdept[R2];
-                    // routing: [bus, trip,stops]
-                    vector<vector<vector<int>>> xk(B);
-                    // D: [bus, trip,departure time]
-                    vector<vector<vector<double>>> Dk(B);
+                    
+                    // Thread-local solution structures
+                    vector<vector<vector<int>>> xk(B);     // Routes
+                    vector<vector<vector<double>>> Dk(B);  // Departure times
+                    
+                    // Feasibility flags
                     bool INFEAS1 = false, INFEAS2 = false, INFEAS3 = false, INFEAS4 = false, INFEAS5 = false;
 
-                    // generator.seed(7851 * (omp_get_thread_num()));
+                    /***************************************************************
+                     * MAIN OPTIMIZATION LOOP
+                     * Generate and improve solutions until global infeasibility found
+                     ***************************************************************/
                     while (!INFEASS0) {
-                        // cout << omp_get_thread_num() << endl;
-                        // cout << "Start \n";
+                        // Clear previous solution
                         for (s = 0; s < B; s++) {
                             xk[s].clear();
                             Dk[s].clear();
                         }
-                        // if (!INFEASS0) {
-                        // cout << run << endl;
-                        // generator.seed(48441 * (omp_get_thread_num()+countInfeas1+countInfeas2));
-                        // cout << run << " parallel "<< endl;
 
-                        // std::cout << "\n************************************************************************** Run number: " << run + 1 << endl;
-                        // logres = "";
+                        /*******************************************************
+                         * INITIALIZE PASSENGER ASSIGNMENTS
+                         *******************************************************/
                         for (p = 0; p < R; p++) {
-                            yk[p][0] = -1;
-                            yk[p][1] = -1;
-                            yk[p][2] = -1;
+                            yk[p][0] = -1;  // Bus
+                            yk[p][1] = -1;  // Trip
+                            yk[p][2] = -1;  // Stop
                         }
 
+                        // Sort passengers by desired time (arrival or departure)
                         for (p = 0; p < R1; p++) {
                             indexpt[p] = p;
                             temparrivals[p] = arrivals[p];
@@ -3778,30 +4113,37 @@ int main() {
                         }
                         quickSort(indexpt, temparrivals, 0, R1 - 1);
                         quickSort(indexpt2, tempdept, 0, R2 - 1);
+                        
                         best_stop = 0;
-                        startopt = tempdept[0] - 1000;
+                        startopt = tempdept[0] - 1000;  // Start optimization before first request
                         threshold = 0, tt = 0;
                         cost = 0, b_cost = 0;
 
                         route.clear();
-
                         timetable.clear();
                         tempt.clear();
-                        // cout << "check\n";
+                        
+                        // Clear parameter tracking vectors
                         dPM10.clear();
                         dPM20.clear();
                         dPM30.clear();
                         dFPM0.clear();
                         dXT0.clear();
                         dC0.clear();
+                        
                         l_arr = arrivals[indexpt[0]], l_dep = departures[indexpt2[0]] + short_route * 0.75;
-                        // logres += "Run: " + to_string(run + 1) + "\t";
-                        // start_time = clock();
-                        //************************************Initial Solution***************************************
+                        
+                        /*******************************************************
+                         * INITIAL SOLUTION GENERATION
+                         * Build feasible routes by inserting passengers
+                         *******************************************************/
+                        
+                        // Initialize frequency tracking
                         for (i = 0; i < N; i++) {
                             freqN[i] = -INT16_MAX;
                         }
-                        countp = p1 = p2 = 0;
+                        
+                        countp = p1 = p2 = 0;  // Passenger counters
                         for (b = 0; b < B; b++) {
                             trips[b] = 0;
                             bd[b] = startopt; // start of optimization
@@ -4671,17 +5013,6 @@ int main() {
                                 continue;
                             }
                         }
-
-                        // nhp = 0.05;
-                        // else logres += "cost: " + to_string(cost) + "\trun time: " + to_string(elapsed_time) + "\t";
-
-                        // logres += "   pm1: " + to_string(int(pm1 * 100)) + "%  pm2: " + to_string(int(pm2 * 100)) + "%  pm3: " + to_string(int(pm3 * 100)) + "%\n";
-                        // infeastemp = 0;
-                        // cout << "Found! one \n";
-                        // if (!(INFEAS1 || INFEAS2 || INFEAS3 || INFEAS4) && countp == R) {
-                        // countFeas++;
-                        // cout << cost << " Ts: " + to_string(Ts) << endl;
-                        // cout << " thread: " + to_string(omp_get_thread_num()) + " it: " + to_string(iii) + " cost: " + to_string(cost) + "\n";
 #pragma omp critical
                         {
                             Costb.push_back(cost);
@@ -4908,12 +5239,6 @@ int main() {
                             change4[0] = key4;
                             change5[0] = key5;
                             change6[0] = key6;
-                            // change1.push_back(key1);
-                            // change2.push_back(key2);
-                            // change3.push_back(key3);
-                            // change4.push_back(key4);
-                            // change5.push_back(key5);
-                            // cout << lPM1.size() << endl;
                             for (i = 1; i < dSize; i++) {
                                 key1 = destroy(generator);
                                 while (std::find(change1, endC1, key1) != endC1) {
@@ -7503,42 +7828,10 @@ int main() {
             iruns--;
         }
 
-        /*
-        Pa.clear();
-        for (p = 0; p < OG_R; p++) {
-                Pa.push_back(p); // list of passengers with no fixed request yet
-        }
-
-        //solution until the timestamp
-        for (b = 0; b < B; b++) {
-                xsol[b].clear();
-                Dsol[b].clear();
-        }
-
-        X1 = Pa.size();
-        for (i = 0; i < X1; i++) {
-                ysol[Pa[i]][0] = -2;
-                pickup[i] = -1;
-                pickupstops[i] = -1;
-        }
-        //printpluscost(xsol, Dsol, ysol, B, OG_R, OG_R1, N, traveltimes, traveltimep, pickup, OG_departures, OG_arrivals, c1, c2, c3, OGxt, d_ae, d_al, d_dl, d_de, dw, penalty, short_route, closestPS, d_t, true);
-
-        //available times and number of trip
-        for (b = 0; b < B; b++) {
-                trips[b] = 0;
-                bd[b] = minTS - 60 * 50;
-        }
-
-        for (j = 0; j < N; j++) {
-                freqN[j] = -1;
-        }
-
-        StaticOpt(B, N, M, S, OG_R, OG_R1, OG_R2, OGxt, C_OG, d_dl, d_de, d_ae, d_al, TS, short_route, pickup, OG_departures, OG_arrivals, best_route, traveltimes, traveltimep, closestPS, dw, xsol, Dsol, ysol, max_wait, c1, c2, c3, endtime, trips, bd, freqN, pickupstops, penalty, N_it*10, 0.01, 12,0.15);
-        cost = printpluscost(xsol, Dsol, ysol, B, OG_R, OG_R1, N, traveltimes, traveltimep, pickup, OG_departures, OG_arrivals, c1, c2, c3, OGxt, d_ae, d_al,d_dl, d_de, dw, penalty, short_route, closestPS, d_t, true, isFEAS);
-        if (isFEAS) cout << "\t\t+++++++++++++ IS FEASIBLE +++++++++++++++++++\n";
-        */
-
-        ////////////////////////////////////////////////////// remove memory
+        /***************************************************************************
+         * MEMORY CLEANUP
+         * Free all dynamically allocated arrays
+         ***************************************************************************/
         for (i = 0; i < S; i++) {
             delete[] closestS[i];
             delete[] traveltimes[i];
@@ -7556,5 +7849,7 @@ int main() {
         delete[] closestS;
         delete[] traveltimes;
         delete[] traveltimep;
-    }
+    }  // End of instance loop
+    
+    return 0;
 }
