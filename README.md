@@ -1,6 +1,6 @@
 # FSMS-RealTime: Flexible Semi-Fixed Route Bus System with Real-Time Demand
 
-A C++ optimization solver for the **dynamic Feeder Service with Mandatory Stops (FSMS)** that adapts semi-fixed bus routes in real-time to accommodate passenger requests while maintaining service frequency and capacity constraints. This is the code related to this [https://doi.org/10.1080/23249935.2023.2227738](academic paper).
+A C++ optimization solver for the **dynamic Feeder Service with Mandatory Stops (FSMS)** that adapts semi-fixed bus routes in real-time to accommodate passenger requests while maintaining service frequency and capacity constraints. This is the code related to this [academic paper](https://doi.org/10.1080/23249935.2023.2227738).
 
 ---
 
