@@ -168,10 +168,3 @@ The system supports real-time passenger insertion through:
 - Minimizes disruption to existing passengers
 - Returns insertion cost or -1 if infeasible
 
----
-
-## Performance
-
-- **Parallelization**: Uses OpenMP to explore multiple solution neighborhoods simultaneously
-- **Iterations**: Default 30,000 iterations per instance with early stopping on convergence
-- **Memory**: AddressSanitizer enabled in Debug builds for memory safety validation
