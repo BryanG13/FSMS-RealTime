@@ -93,21 +93,6 @@ Located in `data/input/` or `data/input/Antwerp/`:
 - `travel_time.csv`: Pre-computed travel times between all bus stops
 - Plus the same .txt files with suffixes (e.g., `passengers100.txt`, `optional8.txt`)
 
-### Default Parameters (Configurable in code)
-
-- **B = 18**: Number of buses
-- **N = 8**: Number of mandatory stops
-- **M = 8**: Optional stops per cluster
-- **OG_R = 100**: Total passenger requests
-- **C_OG = 20**: Bus capacity
-- **TS = 15,120s** (4.2 hours): Planning horizon
-- **OGxt = 1,200s** (20 min): Minimum headway between buses
-- **dw = 1,200s** (20 min): Maximum walking time
-- **pspeed = 1.0 m/s**: Pedestrian walking speed
-- **bspeed = 11.11 m/s** (40 km/h): Bus driving speed
-
----
-
 ## Build & Run
 
 ### Prerequisites
@@ -190,23 +175,3 @@ The system supports real-time passenger insertion through:
 - **Parallelization**: Uses OpenMP to explore multiple solution neighborhoods simultaneously
 - **Iterations**: Default 30,000 iterations per instance with early stopping on convergence
 - **Memory**: AddressSanitizer enabled in Debug builds for memory safety validation
-
----
-
-## Notes
-
-- The system is designed for **semi-fixed route buses** (not fully flexible ride-sharing)
-- Maintains predictable service at mandatory stops with adaptive coverage between them
-- Trade-offs can be tuned via objective weights (c1, c2, c3) and parameter ranges (PM, fpm)
-- Real-world deployment would require integration with:
-  - Live passenger request systems (mobile apps, call centers)
-  - Vehicle tracking/dispatching systems
-  - Real-time traffic data for travel time updates
-
----
-
-## Authors & References
-
-This implementation is based on research in demand-responsive transit optimization. For academic context and methodology details, please refer to related publications on flexible transit systems.
-
----
